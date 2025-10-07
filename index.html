@@ -1,0 +1,732 @@
+
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Swiper.js 專業圖片相簿 (阿剛老師版)</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <style>
+        html, body {
+            position: relative;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            font-family: sans-serif;
+            background-color: #000;
+            overflow: hidden;
+        }
+        body {
+            display: flex;
+            flex-direction: column;
+        }
+        .swiper-container-wrapper {
+            width: 100%;
+            height: calc(100% - 100px);
+            position: relative;
+            overflow: hidden;
+        }
+        .swiper { width: 100%; height: 100%; }
+        .swiper-slide {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #000;
+        }
+        .swiper-slide img {
+            display: block;
+            width: auto;
+            height: auto;
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            cursor: pointer;
+        }
+        .swiper-thumbs { height: 100px; box-sizing: border-box; padding: 10px 0; }
+        .swiper-thumbs .swiper-slide { width: 80px; height: 80px; opacity: 0.5; transition: opacity 0.3s; cursor: pointer !important; }
+        .swiper-thumbs .swiper-slide-thumb-active { opacity: 1; border: 3px solid #f7a738; }
+        .swiper-thumbs .swiper-slide img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; } /* 讓點擊事件穿透到父層 slide */
+        
+        .swiper-button-next, .swiper-button-prev { color: #ffffff; opacity: 0.7; transition: opacity 0.3s; }
+        .swiper-button-next:hover, .swiper-button-prev:hover { opacity: 1; }
+
+        #controls-toggle {
+            position: absolute;
+            bottom: 115px;
+            right: 15px;
+            width: 50px;
+            height: 50px;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: 1px solid white;
+            border-radius: 50%;
+            font-size: 24px;
+            cursor: pointer;
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: transform 0.3s, background-color 0.3s;
+        }
+        #controls-toggle:hover { background-color: rgba(255, 255, 255, 0.2); }
+        #controls-toggle.is-open { transform: rotate(90deg); }
+
+        .control-bar {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            z-index: 50;
+            box-sizing: border-box;
+            transform: translateY(100%);
+            transition: transform 0.4s ease-in-out;
+        }
+        .control-bar.is-open { transform: translateY(0); }
+        .control-bar label, .control-bar button, .control-bar input, .control-bar select {
+            font-size: 14px;
+            color: #fff;
+            background-color: rgba(0,0,0,0.4);
+            border: 1px solid #fff;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .control-bar button:hover, .control-bar select:hover, .control-bar input:hover { background-color: rgba(255, 255, 255, 0.2); }
+        .control-bar select option { background-color: #333; color: white; }
+
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.95); align-items: center; justify-content: center; }
+        .modal-content { max-width: 90%; max-height: 90%; object-fit: contain; }
+        .close { position: absolute; top: 10px; right: 25px; color: #fff; font-size: 50px; cursor: pointer; }
+
+        .watermark {
+            position: fixed;
+            bottom: 15px;
+            left: 15px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            z-index: 90;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="swiper-container-wrapper">
+        <div class="swiper swiper-main">
+            <div class="swiper-wrapper">
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfBBJsOIeq20KnDyVfJ12LqoqTGrGqmjYZU_E2DRPEGVxLQNsPNQFww-ABCUTJag2-UzlmiVXffd52qdI8bh6XS_N35ZyD_HWqa6jVz0NSpkZZzK1ni-nxc6jNcF7wC3sv3MQ0L-6P2mFZp10waaUnDTElP-rWj_VULSiw" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfBBJsOIeq20KnDyVfJ12LqoqTGrGqmjYZU_E2DRPEGVxLQNsPNQFww-ABCUTJag2-UzlmiVXffd52qdI8bh6XS_N35ZyD_HWqa6jVz0NSpkZZzK1ni-nxc6jNcF7wC3sv3MQ0L-6P2mFZp10waaUnDTElP-rWj_VULSiw')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfCFcButJ9g9RvinX1ZWco1wvblBieFm4DYOf6wNiYIp652OZ_kbv2CQmEK69mVbDhShQuaiLwnoGBbbN7eMViOyDYUFH2g7hn2dj265LSOx58oVT_mxPE8mOBkUu7-XibEma_-2j9whObhDwBzRJmMjeueXwiJKQtt4Wtez" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfCFcButJ9g9RvinX1ZWco1wvblBieFm4DYOf6wNiYIp652OZ_kbv2CQmEK69mVbDhShQuaiLwnoGBbbN7eMViOyDYUFH2g7hn2dj265LSOx58oVT_mxPE8mOBkUu7-XibEma_-2j9whObhDwBzRJmMjeueXwiJKQtt4Wtez')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfCd10LEXz1opvNL8glr3jqybawOuvtR83IdZ1LhsahV1p6UXUFMEJoZnI1wiZoRzY0QqJB2ZEJRTsW1jA4EoiVObnRMqhEdX03ihtdvLzFLWp8nhhTGZmrTHPYZBNbujtpTYUUvdeXqu4y5Gb_PQUE6RGlEazwbuL0PmUJC" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfCd10LEXz1opvNL8glr3jqybawOuvtR83IdZ1LhsahV1p6UXUFMEJoZnI1wiZoRzY0QqJB2ZEJRTsW1jA4EoiVObnRMqhEdX03ihtdvLzFLWp8nhhTGZmrTHPYZBNbujtpTYUUvdeXqu4y5Gb_PQUE6RGlEazwbuL0PmUJC')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfBIs0xLrdHAOrtzpS-xf-6HlVyfNcEXoEZY_fi7Zhn8a9fEETb904Hnop8N_pCY4ZtgqfNUJjRKJ-GJDDJPU0QJYsAC6ljWXDkI-96E3iHrc42OsTBaa9OKoAkQcq3AUS3HOPqC34P_zq8o0jWwfJDxu0OsVncN-hyWMA" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfBIs0xLrdHAOrtzpS-xf-6HlVyfNcEXoEZY_fi7Zhn8a9fEETb904Hnop8N_pCY4ZtgqfNUJjRKJ-GJDDJPU0QJYsAC6ljWXDkI-96E3iHrc42OsTBaa9OKoAkQcq3AUS3HOPqC34P_zq8o0jWwfJDxu0OsVncN-hyWMA')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfBWaylAQueXq89I0-B_7ggRluKNME_OBqSKNmhYbbzJ3ubwp9dF8L4F38ilcA-NshhGC6nkmKnyyfzytVkCLutu440fQ3cC2EkhTT68q2qiHRcWXrUyO_QOiiXaHuuYvdOVJEXlLyUiawTwOtbm5LrSnYLjDoMmToYgQDz4" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfBWaylAQueXq89I0-B_7ggRluKNME_OBqSKNmhYbbzJ3ubwp9dF8L4F38ilcA-NshhGC6nkmKnyyfzytVkCLutu440fQ3cC2EkhTT68q2qiHRcWXrUyO_QOiiXaHuuYvdOVJEXlLyUiawTwOtbm5LrSnYLjDoMmToYgQDz4')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfCgqqqJm0fuTZ6d-LdebQ2qGUUckmnjCd9ZJ3ReYx0DYFL8qlmyWc0VFTA8SqzS82vB8e-Wfh1R-mtPRihI0Dbm56vYXq-9ORMgWY6Sf_L9dbB2JcUOuWGiZLEfbeezuYQVBIIVbc1arBJVIcctKYhfuu34mnIG6Eoxcg" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfCgqqqJm0fuTZ6d-LdebQ2qGUUckmnjCd9ZJ3ReYx0DYFL8qlmyWc0VFTA8SqzS82vB8e-Wfh1R-mtPRihI0Dbm56vYXq-9ORMgWY6Sf_L9dbB2JcUOuWGiZLEfbeezuYQVBIIVbc1arBJVIcctKYhfuu34mnIG6Eoxcg')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfBEbBft1RpoicX2n2kNyT1x0xUgVpFdshL3A17uK_Mpnem2C6N2I4NuyKUxHUcsDiVRqt51mjs18vv3xhWRkR-eTTqOS_r4VNuXQkQJ7waecsGqo9Z8o6enJ1i40OKnD-WEoPJywvkW6FPZrPw7aDXduPISTpPY7hep470f" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfBEbBft1RpoicX2n2kNyT1x0xUgVpFdshL3A17uK_Mpnem2C6N2I4NuyKUxHUcsDiVRqt51mjs18vv3xhWRkR-eTTqOS_r4VNuXQkQJ7waecsGqo9Z8o6enJ1i40OKnD-WEoPJywvkW6FPZrPw7aDXduPISTpPY7hep470f')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfAJp6P1l1WpQg0wnbNu0mojGTgygmFWMJ0FLYAZ-tvrCdNezDUn8iGoooHdLQ6EZe3vikyb5sfUglgg_lHzCCRPiRiSGp7-aY-hwPaT5hhHoUCAPQtZdaO5Vae2ttTwE8acQn2CtH2G5jfr7-9WLhh3kX8-LfqFuzeoLQ" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfAJp6P1l1WpQg0wnbNu0mojGTgygmFWMJ0FLYAZ-tvrCdNezDUn8iGoooHdLQ6EZe3vikyb5sfUglgg_lHzCCRPiRiSGp7-aY-hwPaT5hhHoUCAPQtZdaO5Vae2ttTwE8acQn2CtH2G5jfr7-9WLhh3kX8-LfqFuzeoLQ')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfBZK0JLeqv0L0Vsc3_rGzTRAUjD1gvZrBSTc12iciBTt6YVTekb7JLGU2aeLXPZLCsbytvAkPZFjpd2WOCFEbBukTIIctmTerdz74yhxEmzYy7ZLeSl7cky8JJ79ehnEtcmOUw_1XguMflyz4wBPKo_-ptWUoUi52_cFw" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfBZK0JLeqv0L0Vsc3_rGzTRAUjD1gvZrBSTc12iciBTt6YVTekb7JLGU2aeLXPZLCsbytvAkPZFjpd2WOCFEbBukTIIctmTerdz74yhxEmzYy7ZLeSl7cky8JJ79ehnEtcmOUw_1XguMflyz4wBPKo_-ptWUoUi52_cFw')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfDO21sXq1Zn8Tgh7bqZC_d30KzDE6KdBbKLkfY6WJ-c_l7mGJjQADc8DN8Hy8UzUn2ypmrhdIHX2c9aEdpDYdztUErGoY1IB9dy2jCaDv0Y5m7ugJWu5grQjX6eM8zc0mlP7csyQAFv8FsnGBBs1Tncvbcq2VY_3PLt2Nwp" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfDO21sXq1Zn8Tgh7bqZC_d30KzDE6KdBbKLkfY6WJ-c_l7mGJjQADc8DN8Hy8UzUn2ypmrhdIHX2c9aEdpDYdztUErGoY1IB9dy2jCaDv0Y5m7ugJWu5grQjX6eM8zc0mlP7csyQAFv8FsnGBBs1Tncvbcq2VY_3PLt2Nwp')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfAhleA8mmieBtibYBWluPOESVftdA0P94ec-Q38G9upg7_ORkYHEAbfKbQFXbDA711hb3n5P97DC3jKQ7NhaMqE3ni6h-BIMtgv0QI7CRsJZedEKnjfuHk1mdSn_xNTwumU2-G8Bp-0h8qLIXVyWzJXtSAXeElgEjYcow" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfAhleA8mmieBtibYBWluPOESVftdA0P94ec-Q38G9upg7_ORkYHEAbfKbQFXbDA711hb3n5P97DC3jKQ7NhaMqE3ni6h-BIMtgv0QI7CRsJZedEKnjfuHk1mdSn_xNTwumU2-G8Bp-0h8qLIXVyWzJXtSAXeElgEjYcow')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfC-EbkdFn0WAPICBf4esyHjbP431gP8dm3uHzD7poqh4u4ZgW1x3nJy3ftMs2afsglKy1WwduIASWAfIQjnWCD2t4vIapVmNCpVOrY5jmMDNpFXd4vrB2L-I93yJ8T90qCM90wxidMIQWsQPVg8P-KYW5zI0bghR6zvxc77" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfC-EbkdFn0WAPICBf4esyHjbP431gP8dm3uHzD7poqh4u4ZgW1x3nJy3ftMs2afsglKy1WwduIASWAfIQjnWCD2t4vIapVmNCpVOrY5jmMDNpFXd4vrB2L-I93yJ8T90qCM90wxidMIQWsQPVg8P-KYW5zI0bghR6zvxc77')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfDU4S-pA7zhW2sP10ULvjc9BiIDoztzNp0fJGDsOe8L6p9Cwi2FWOAB7NjZxeIGLhOoww-McGm3gdOpApcQM9m_FO76cAMlKdXS_uswFCHkhIGDL-1c6YboR-89gZd3EJ6XbJ1tHwH_kx00O_e7qJQZ3kxPHoTcKECWMw" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfDU4S-pA7zhW2sP10ULvjc9BiIDoztzNp0fJGDsOe8L6p9Cwi2FWOAB7NjZxeIGLhOoww-McGm3gdOpApcQM9m_FO76cAMlKdXS_uswFCHkhIGDL-1c6YboR-89gZd3EJ6XbJ1tHwH_kx00O_e7qJQZ3kxPHoTcKECWMw')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfCTZ5agDx9FoX1HHFN2DSJFqJQp_Ao-ytG2RROA7Gq2dwR20UMUfk7US8fJkHTLJ8Fju3m78JoAA-AKNBhnBXIPiLkdRQKidDkhXTKAupXp2tzG7xcS4Y5zLs-NNPvzIxvgNtHdjBIxmETLx7-kybsy8z1CHxFtWoVvdg" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfCTZ5agDx9FoX1HHFN2DSJFqJQp_Ao-ytG2RROA7Gq2dwR20UMUfk7US8fJkHTLJ8Fju3m78JoAA-AKNBhnBXIPiLkdRQKidDkhXTKAupXp2tzG7xcS4Y5zLs-NNPvzIxvgNtHdjBIxmETLx7-kybsy8z1CHxFtWoVvdg')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfDvVWzrAaOXqozNzfG8H4Hf8eU48ixTByDsFz5JIqnjFAgnHc0pPqT7EOZNEYNEdMIVZvp67_ZQS9mA0Xvakdvwc13z79JXe64Si9NkoD7YVS8260R6p8s5myksWciBTwBCDR_EKzbmCyJf9r2ks21hKT61vDXDBfC-ZIAr" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfDvVWzrAaOXqozNzfG8H4Hf8eU48ixTByDsFz5JIqnjFAgnHc0pPqT7EOZNEYNEdMIVZvp67_ZQS9mA0Xvakdvwc13z79JXe64Si9NkoD7YVS8260R6p8s5myksWciBTwBCDR_EKzbmCyJf9r2ks21hKT61vDXDBfC-ZIAr')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfB6iiPqxmSae7m3q63C495aqMHu5bdM6fTL9O1KtDxMHah8KI7Z5llC2deuFUeVXxpK8Tj291fG2iJJKtajao-Jfdbp7bl37SuvXagenuUS5iZ9035npJQlC9fee7J1laOLA0H0aAsTZocBC7WSIi3cdINocR9a_I5wHK22" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfB6iiPqxmSae7m3q63C495aqMHu5bdM6fTL9O1KtDxMHah8KI7Z5llC2deuFUeVXxpK8Tj291fG2iJJKtajao-Jfdbp7bl37SuvXagenuUS5iZ9035npJQlC9fee7J1laOLA0H0aAsTZocBC7WSIi3cdINocR9a_I5wHK22')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfCwseE8yzfmRGX3J0NZ0a6Sq46o26bhbG0Pc9YbD629sABd-6cJ9k3UsGVVlfArcMrGmGlS_j5I7TG_tEbQHi_YnV8PE6bpMetAUzhWSm3YZUhOuYcDyqZk8r-iDsyXaCPrs2E_H8zJlLsRUDYnSIK2CPufFphiugo6Pig_" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfCwseE8yzfmRGX3J0NZ0a6Sq46o26bhbG0Pc9YbD629sABd-6cJ9k3UsGVVlfArcMrGmGlS_j5I7TG_tEbQHi_YnV8PE6bpMetAUzhWSm3YZUhOuYcDyqZk8r-iDsyXaCPrs2E_H8zJlLsRUDYnSIK2CPufFphiugo6Pig_')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfCjcgpZYMwGEdZNIzH0idpkCYx0qMaUrdgPDzVL-bnPb0-z4QRiSJqzIszgs239rALTd-rgFI78z98BRlS7fWY1i1GRBargpXECxHZYmNFnIODswlXcuO9G0JXZleSjE1pvWrB_DjnwXpt4cZpYOY8UfO9LBqOU_7HRCg" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfCjcgpZYMwGEdZNIzH0idpkCYx0qMaUrdgPDzVL-bnPb0-z4QRiSJqzIszgs239rALTd-rgFI78z98BRlS7fWY1i1GRBargpXECxHZYmNFnIODswlXcuO9G0JXZleSjE1pvWrB_DjnwXpt4cZpYOY8UfO9LBqOU_7HRCg')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfCGEITUCax6fwEmpyX8H-qnjq29NVgpTtn8nF1C1xoxFY09o2I6RJpIcTvfmo-zec4n5BH4NuC5QUqCSWxSozj6OMjL0OlVWxdaKmxg_Hwj0RcMGDuocbDvXmcxujyNgvJP-5MzWg-28GySunZwjCGUxOrzQ6j62B7XW5UM" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfCGEITUCax6fwEmpyX8H-qnjq29NVgpTtn8nF1C1xoxFY09o2I6RJpIcTvfmo-zec4n5BH4NuC5QUqCSWxSozj6OMjL0OlVWxdaKmxg_Hwj0RcMGDuocbDvXmcxujyNgvJP-5MzWg-28GySunZwjCGUxOrzQ6j62B7XW5UM')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfDdwtkH4ybGlcTAW0ol7QRI1ueeCFMoaOCQ2ZwrCoQyYybrCLpAca3hDTcw7bcxR3UYnxWzL40bRYxCubDrIGSmOSBcIKXDSaUpdhgWBmHTOvqnCcRTN_ybKNRBiv8UK6e8BBOUEW5KyCBVA9UXmWKjRLMszgGOwBro1g" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfDdwtkH4ybGlcTAW0ol7QRI1ueeCFMoaOCQ2ZwrCoQyYybrCLpAca3hDTcw7bcxR3UYnxWzL40bRYxCubDrIGSmOSBcIKXDSaUpdhgWBmHTOvqnCcRTN_ybKNRBiv8UK6e8BBOUEW5KyCBVA9UXmWKjRLMszgGOwBro1g')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfDMQupL1W5LKuCIzLkQ3X0wn7nPfGgMsVBdeTE0_xnFPkV74ABDXtQzhaR00ImGmOo23B0VpdSwe_xYTSXmnZVLaaZgXA29FU6TU2_aferzppwzb3a8zzWDkzUmaMGDJPY7FihXgFs5Z5Yjvxzq69AUT_ZmIGU46T3wGQ" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfDMQupL1W5LKuCIzLkQ3X0wn7nPfGgMsVBdeTE0_xnFPkV74ABDXtQzhaR00ImGmOo23B0VpdSwe_xYTSXmnZVLaaZgXA29FU6TU2_aferzppwzb3a8zzWDkzUmaMGDJPY7FihXgFs5Z5Yjvxzq69AUT_ZmIGU46T3wGQ')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfA-xKxEPUrq-h_jOWCTkB8l3tQDIGKj1jwiLLV6CSMXLaZv7DsPg9qTJwLN9vdT87LthfPwY7tzM-xpCjSKtIBY5qiX1xPeMO1Tnihd6NBXHbjZh9WbxiTLmvtwVKsTQfA18oW664hsTyOhvi3Pk37g0HXgzsdpKu4-CM06" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfA-xKxEPUrq-h_jOWCTkB8l3tQDIGKj1jwiLLV6CSMXLaZv7DsPg9qTJwLN9vdT87LthfPwY7tzM-xpCjSKtIBY5qiX1xPeMO1Tnihd6NBXHbjZh9WbxiTLmvtwVKsTQfA18oW664hsTyOhvi3Pk37g0HXgzsdpKu4-CM06')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfDSxH2ogpfXayJO-fY-1YpvW4y-D9M7kS4_YtGGORpMc9nGLD_BZi2c6X-KAjSwYn-uMlZYkCtLBQ6RYDBqyC1g58k5CfG3jjQQaHMl8_FKX82H2ckrxpXfi3Qu1nsOBBa_x54p0QdtHe62BQtHM_mJRrLT_E0THN9ct4uw" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfDSxH2ogpfXayJO-fY-1YpvW4y-D9M7kS4_YtGGORpMc9nGLD_BZi2c6X-KAjSwYn-uMlZYkCtLBQ6RYDBqyC1g58k5CfG3jjQQaHMl8_FKX82H2ckrxpXfi3Qu1nsOBBa_x54p0QdtHe62BQtHM_mJRrLT_E0THN9ct4uw')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfBIEnoay0WmDygpJamTF6A_ejVtrqnKLZzMzNf7VTli4UamZjzpOtawZ04lYc53NcgdntNBzLELHTGSgYrtaG1WUQNE0Mnnwqh7cgebLjPzm8y6X-xp8MZFXXn9c7cTQSra6PB0tI5C0DXKflYkrwLL19fWZi-7Q-PlvUen" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfBIEnoay0WmDygpJamTF6A_ejVtrqnKLZzMzNf7VTli4UamZjzpOtawZ04lYc53NcgdntNBzLELHTGSgYrtaG1WUQNE0Mnnwqh7cgebLjPzm8y6X-xp8MZFXXn9c7cTQSra6PB0tI5C0DXKflYkrwLL19fWZi-7Q-PlvUen')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfDaeDHWXxjvVpBlYENDqgbrI85ALppmIZz5p0jRvOjaTqrB5Yv5zlbL6wV3y2qysaYBcOVa2Vq8GZJgCzNT8hRASEDMoRZw1qLDwVBUKM0op-TMCCKFGZORyQJCPBLv8RtaevV_u-j42dXusM4paGIbPOPJACaWQnnc7A7A" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfDaeDHWXxjvVpBlYENDqgbrI85ALppmIZz5p0jRvOjaTqrB5Yv5zlbL6wV3y2qysaYBcOVa2Vq8GZJgCzNT8hRASEDMoRZw1qLDwVBUKM0op-TMCCKFGZORyQJCPBLv8RtaevV_u-j42dXusM4paGIbPOPJACaWQnnc7A7A')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfDqGArk8hjCGZNOFubHmuAKmv5r3q734BFOq8IGC-rHL2TPIeZvjQZxzlkntVw3htqavPRzbuimlUw_tyhPNiNdyoToojJXv1QVhIEhfedAYLM6KIa2c-mAR0bGRI_2fu92fAkegrC4y6SL1rC2d6Io3j-yp9ucsCum2oyw" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfDqGArk8hjCGZNOFubHmuAKmv5r3q734BFOq8IGC-rHL2TPIeZvjQZxzlkntVw3htqavPRzbuimlUw_tyhPNiNdyoToojJXv1QVhIEhfedAYLM6KIa2c-mAR0bGRI_2fu92fAkegrC4y6SL1rC2d6Io3j-yp9ucsCum2oyw')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfBllvyKQnGS1Exv4KWcAIhMk4B1Y7FkGyHOkSXVlBXPvQE_HdQXRDjNCXrm4_IRujB6NAWDn8E4D7ICRPv4mSSvT0ybjYLVqSUSn0hST8VmkCZhwKqBkIlEpWkBny0IHUdjOnxCS87rbAejwoADuojwvHEBe6fb-OKytQUL" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfBllvyKQnGS1Exv4KWcAIhMk4B1Y7FkGyHOkSXVlBXPvQE_HdQXRDjNCXrm4_IRujB6NAWDn8E4D7ICRPv4mSSvT0ybjYLVqSUSn0hST8VmkCZhwKqBkIlEpWkBny0IHUdjOnxCS87rbAejwoADuojwvHEBe6fb-OKytQUL')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfB1TBrbu-F7vWIN6xtVxqdK_megmtcGJ2u_oNuT4dizVZoJ_bsCyb9OvnTuMFQH7y5gN25vOLyh9bPwOH9yIAeoDXK-_XLJ_KqUr-PHrGxBj2i_ZKyGqHI1GOnk9FAGAq8rp6mHg_5I-PRff3COK8s5A9oh984rit-DdQ" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfB1TBrbu-F7vWIN6xtVxqdK_megmtcGJ2u_oNuT4dizVZoJ_bsCyb9OvnTuMFQH7y5gN25vOLyh9bPwOH9yIAeoDXK-_XLJ_KqUr-PHrGxBj2i_ZKyGqHI1GOnk9FAGAq8rp6mHg_5I-PRff3COK8s5A9oh984rit-DdQ')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfCKgJ58W3S88bWHHmdIWdaarOJoiWeiMdeJLA6_aL0_FAOu-TyMaZmRrt53Kux5658NhzGk8mjueRte-9WKeE9OiTXvE91gHVo27PuUwMRNUl1Z_baJC1gtOnBWQzPynEDxuNC0VwkIY37J67mCoiqDzzGjONLOzBcjefif" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfCKgJ58W3S88bWHHmdIWdaarOJoiWeiMdeJLA6_aL0_FAOu-TyMaZmRrt53Kux5658NhzGk8mjueRte-9WKeE9OiTXvE91gHVo27PuUwMRNUl1Z_baJC1gtOnBWQzPynEDxuNC0VwkIY37J67mCoiqDzzGjONLOzBcjefif')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfDldWMvAlRgW9yn-K7y7WWI3l-UCxnlZouARyKHfwPugwi4hUSAZ8SIx2uzCXoYNAVgYkDGkhp-icRO2nqdemKtEbHTx1jaRXcwkuUkDMMD-LHrUSQAtTEX3uk_Kwys9m9CMapddi6pdBMhVtaC7VPJSjTCSuwRFHYon5_N" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfDldWMvAlRgW9yn-K7y7WWI3l-UCxnlZouARyKHfwPugwi4hUSAZ8SIx2uzCXoYNAVgYkDGkhp-icRO2nqdemKtEbHTx1jaRXcwkuUkDMMD-LHrUSQAtTEX3uk_Kwys9m9CMapddi6pdBMhVtaC7VPJSjTCSuwRFHYon5_N')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfDLsTSJ8CBq97XAIwTOknIrdMl0lIE7vNZZDU4dTDEYOb1_iX_IG_G_2Y1YrB2YCmsdnSwsCrmEU90Tz28gaC2WhZe9Ic6ZH3b_UQUv8rhvjtCrohnfBKytTSWqh4-3LNZv6AFI00988umPoW2H-kmxMxJBJCrXG-yv0QNV" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfDLsTSJ8CBq97XAIwTOknIrdMl0lIE7vNZZDU4dTDEYOb1_iX_IG_G_2Y1YrB2YCmsdnSwsCrmEU90Tz28gaC2WhZe9Ic6ZH3b_UQUv8rhvjtCrohnfBKytTSWqh4-3LNZv6AFI00988umPoW2H-kmxMxJBJCrXG-yv0QNV')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfAQe5kTSyAPdexXDfBRai6ndGPGHH3NusiRjVkj5M8vUd_dpeMd15br37dc6Cduv-yvqxs4nYip8YHqCy4BJONpUpeEEUrmEeUI85p0ld5nlAZ6N1LkpE9_xQHdC6VMEP1L9eVXBmjWss1kT4NyOGc6YkIUKP0Mu_yCnnBC" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfAQe5kTSyAPdexXDfBRai6ndGPGHH3NusiRjVkj5M8vUd_dpeMd15br37dc6Cduv-yvqxs4nYip8YHqCy4BJONpUpeEEUrmEeUI85p0ld5nlAZ6N1LkpE9_xQHdC6VMEP1L9eVXBmjWss1kT4NyOGc6YkIUKP0Mu_yCnnBC')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfAiG2XDJnYxzT85i3ar5rQXdzMDe0YzoTEfzDRO-SNBwNTMsFNbZ4dxEWi2GAbiMEbFlduRaOnXz8a_DpD3RLVO0m4qM8AYnFaJnUQXyA6Fxoe6IiwWJM4guk5I46m3gSVBe62rDmYGV9nl8VRVza_IK4lTWiEc1Kr_Mg" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfAiG2XDJnYxzT85i3ar5rQXdzMDe0YzoTEfzDRO-SNBwNTMsFNbZ4dxEWi2GAbiMEbFlduRaOnXz8a_DpD3RLVO0m4qM8AYnFaJnUQXyA6Fxoe6IiwWJM4guk5I46m3gSVBe62rDmYGV9nl8VRVza_IK4lTWiEc1Kr_Mg')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfD2F3iovxp9E9_DrvKuYh_0J6jZc3Ee5ZfDOI7N0jsgUspYu3TUam2V0MUdTJCsnYA8Mbhu-kdvWtNdwbNDQgUUbUSuByRK-tdFLXHtO8uOlEWL0jK9aMROU-TNlClsfTPePXy27mncML-Wyv5UtJ5pGyGPnvs3USVEkw" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfD2F3iovxp9E9_DrvKuYh_0J6jZc3Ee5ZfDOI7N0jsgUspYu3TUam2V0MUdTJCsnYA8Mbhu-kdvWtNdwbNDQgUUbUSuByRK-tdFLXHtO8uOlEWL0jK9aMROU-TNlClsfTPePXy27mncML-Wyv5UtJ5pGyGPnvs3USVEkw')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfA1qGepXK28wLKCw8E8KB1Ib0mPIROnulfaGauUhXEBHT0jZxrrUCaC0oHnnhAZCkItZM0DnopCzPeX0f20DKPvgjZaQjqRv7sbvMaYJ_badrtTtqjC1ZVLOyXc-nfcmumG91sD7E1dnbJhD0WJ4CWzZ-zD4CbZsbH7Zw" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfA1qGepXK28wLKCw8E8KB1Ib0mPIROnulfaGauUhXEBHT0jZxrrUCaC0oHnnhAZCkItZM0DnopCzPeX0f20DKPvgjZaQjqRv7sbvMaYJ_badrtTtqjC1ZVLOyXc-nfcmumG91sD7E1dnbJhD0WJ4CWzZ-zD4CbZsbH7Zw')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfAo3_c9LEGctjW48eVLxzAKOSxRtsIoVh8RjZ-fyOawpB0nM-TrqpUHM7jbzDTCYb0Njx7iarw-bS9TaCDQ1McWWilfTcZxB2atg9j7CGP3NUN248l7tyD9XvqLiOTRBzxqYQIJI6Q2VkjsKYptO2I44Njea-ujjNX4gy8P" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfAo3_c9LEGctjW48eVLxzAKOSxRtsIoVh8RjZ-fyOawpB0nM-TrqpUHM7jbzDTCYb0Njx7iarw-bS9TaCDQ1McWWilfTcZxB2atg9j7CGP3NUN248l7tyD9XvqLiOTRBzxqYQIJI6Q2VkjsKYptO2I44Njea-ujjNX4gy8P')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfADAWzt_HnfapejaI7Y6yjsbH08ubjfw_5gNiB1F-XbblBLDBlTYye5jPiqugtE-T1oCKQBWAXGiqCIYgIopEcA_7IDJnH8TVjO-Gan5ig7KXlDPx_N3E6Sy2mlsL6sTQnnyXe_YEoxsTTfKfSIMiaJb3ekhMSfYmdz1phe" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfADAWzt_HnfapejaI7Y6yjsbH08ubjfw_5gNiB1F-XbblBLDBlTYye5jPiqugtE-T1oCKQBWAXGiqCIYgIopEcA_7IDJnH8TVjO-Gan5ig7KXlDPx_N3E6Sy2mlsL6sTQnnyXe_YEoxsTTfKfSIMiaJb3ekhMSfYmdz1phe')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfBR3lrcwfItxDf4MtOurm-rqPEhnQVe1botGug990FcH0bM9Zq5h7z_leTrsQTQO5Rh_8Vq5NwJAYINkTCm7uaUGkk9B6XH29ipNbOhuDuecaSf_ps_op6fK07Ijseivxom6EuRhs4WlHWnHgJnS7bYr8Dh1uP2ea3jnRTc" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfBR3lrcwfItxDf4MtOurm-rqPEhnQVe1botGug990FcH0bM9Zq5h7z_leTrsQTQO5Rh_8Vq5NwJAYINkTCm7uaUGkk9B6XH29ipNbOhuDuecaSf_ps_op6fK07Ijseivxom6EuRhs4WlHWnHgJnS7bYr8Dh1uP2ea3jnRTc')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfCbSweDk7GFahxY-sr5yFmqDYqnXQQ9mF9OtqMwjnh4oHhKWJOEoLVNLXR0EywkZFG8bLsZK-1i3xrcJr8mk5NeFxOAvogHuR_Eq9XpH_vYPwS2VguQIuT4vCiKFXS-V5uVlW2BDoKxCuiYd2_lgc91pZio-MFYHgF3irx_" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfCbSweDk7GFahxY-sr5yFmqDYqnXQQ9mF9OtqMwjnh4oHhKWJOEoLVNLXR0EywkZFG8bLsZK-1i3xrcJr8mk5NeFxOAvogHuR_Eq9XpH_vYPwS2VguQIuT4vCiKFXS-V5uVlW2BDoKxCuiYd2_lgc91pZio-MFYHgF3irx_')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfBBDII-akOVSar-g1RO_iI3eK_Igc58B5s9oCEeL-tWK3GwFgl6h_7Q05fI-obE1tQn4EUiM7jJPKHcF31daju28ufAIph1CAELHLM96kmpoEw3ThC-d2h7S2CkjeaiJHKa6BkbJcDJcmFBi6vKJYAUfjKVvD6Phk9bRk0u" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfBBDII-akOVSar-g1RO_iI3eK_Igc58B5s9oCEeL-tWK3GwFgl6h_7Q05fI-obE1tQn4EUiM7jJPKHcF31daju28ufAIph1CAELHLM96kmpoEw3ThC-d2h7S2CkjeaiJHKa6BkbJcDJcmFBi6vKJYAUfjKVvD6Phk9bRk0u')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfA7n9silLu-iy4W-QKkveku8NlyeRaS-2LdjL8bvbTR1R0MJeVc9SlSPOh7URuxCSOzNgWzkt31HHJkVY7nXKXzUoBNxmqd0Xw355CDxMfMQcxhT4FfBkFez5LA95yZuNUZSqvBZrL7dBAEyarJz9jdYfPYs2xpxPzvdIuH" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfA7n9silLu-iy4W-QKkveku8NlyeRaS-2LdjL8bvbTR1R0MJeVc9SlSPOh7URuxCSOzNgWzkt31HHJkVY7nXKXzUoBNxmqd0Xw355CDxMfMQcxhT4FfBkFez5LA95yZuNUZSqvBZrL7dBAEyarJz9jdYfPYs2xpxPzvdIuH')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfBpNeJnUtUtNLODLLT_u3qANmDv5q3cjj4XAWkv8bfiRJWPeTVaWkFv2MySb0ZgoqAFcudy8AcLZV_w7deA7FEfOE4iOdWM0MYgw871YH6Uv_9WdXVfDdpw8IA9JoLI2Y6esZV2-xErXRMTfTBFEqSKw1wRubE4nQMZg2VU" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfBpNeJnUtUtNLODLLT_u3qANmDv5q3cjj4XAWkv8bfiRJWPeTVaWkFv2MySb0ZgoqAFcudy8AcLZV_w7deA7FEfOE4iOdWM0MYgw871YH6Uv_9WdXVfDdpw8IA9JoLI2Y6esZV2-xErXRMTfTBFEqSKw1wRubE4nQMZg2VU')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfBI6CPubUgjLlzYaw4Py_xqmNgnPWnt_zQj4IIR3kCa8wTYJb1zU8zNpI8d2dzI0YqisyHojhuF0h7kOSX5jYPAK-h40M27Nl_ArWvZbp5MZko5momcODk37XYQH5ylGshZ-yiatIceFlisKhhI3BGLWF8lO7c57_TuC5Ea" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfBI6CPubUgjLlzYaw4Py_xqmNgnPWnt_zQj4IIR3kCa8wTYJb1zU8zNpI8d2dzI0YqisyHojhuF0h7kOSX5jYPAK-h40M27Nl_ArWvZbp5MZko5momcODk37XYQH5ylGshZ-yiatIceFlisKhhI3BGLWF8lO7c57_TuC5Ea')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfCIsYbl9zF4WxjUXAGkoa7B_kDfFMxhHZ-pJOf1uTp2vudT51wFostQcih0v2JvnXf39_tbFPMF1IP-_bk773Afko3XYvMyzegQvzn6r7wUnZgcH2atgc7v2xVqEdN6e8wJznjeBnXvRv6tea1qaPftHUUwN1X6I837JsYO" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfCIsYbl9zF4WxjUXAGkoa7B_kDfFMxhHZ-pJOf1uTp2vudT51wFostQcih0v2JvnXf39_tbFPMF1IP-_bk773Afko3XYvMyzegQvzn6r7wUnZgcH2atgc7v2xVqEdN6e8wJznjeBnXvRv6tea1qaPftHUUwN1X6I837JsYO')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfBiXTovuR6KwZezKyoxUDDKFKLmZ-2KlDK_OJCXqn7yXl9MMVQrlALvgpzQ-2O8jVJzNgP9ng_t4Jd5EFuA7mz2iZbt61mIvEaIRjYwnRuYT_TMn8IXvlfmd6e04T0i1ovZ3vYC_el_L9aoQ0qjK6hkC4HbpiIw4HuryQ" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfBiXTovuR6KwZezKyoxUDDKFKLmZ-2KlDK_OJCXqn7yXl9MMVQrlALvgpzQ-2O8jVJzNgP9ng_t4Jd5EFuA7mz2iZbt61mIvEaIRjYwnRuYT_TMn8IXvlfmd6e04T0i1ovZ3vYC_el_L9aoQ0qjK6hkC4HbpiIw4HuryQ')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfDVluUz-DJHA3q6TboQ4M9rOGU9gGXt1tUOIAPeEyO6mFVaMztPHFztA43E9pftPKL39DLzgiDYmKXyYIp0DwZD6yv3IH1EK1gHvgrGaqP1ramI-vDHBX-CIjjV69KRIzwAL98HM4_zgnjHxW3L7X79W8A-wVGY3Veu7A" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfDVluUz-DJHA3q6TboQ4M9rOGU9gGXt1tUOIAPeEyO6mFVaMztPHFztA43E9pftPKL39DLzgiDYmKXyYIp0DwZD6yv3IH1EK1gHvgrGaqP1ramI-vDHBX-CIjjV69KRIzwAL98HM4_zgnjHxW3L7X79W8A-wVGY3Veu7A')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfAGmnAejIkZSIRSHfrFtdt4gQNTREZf8ngvbGcYrrWj2AdnWO6AbIjGFl7yH-McrheRI91w0V9COnSgYiXVMsaOx70-PhpF7hoLrVgr6Vw0SZqRonOd2bLgwa1vxxoorjMek-UMEs9C9Avyel6Hae21FZeCFszzrTKE6GXE" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfAGmnAejIkZSIRSHfrFtdt4gQNTREZf8ngvbGcYrrWj2AdnWO6AbIjGFl7yH-McrheRI91w0V9COnSgYiXVMsaOx70-PhpF7hoLrVgr6Vw0SZqRonOd2bLgwa1vxxoorjMek-UMEs9C9Avyel6Hae21FZeCFszzrTKE6GXE')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfAk_hA7ri5Rc1hRsACLhE43QYHZy6R0OkoAWq3rhbz-knyGL7DDN2FAnQl4Djo31yurmnuOkhO0tOZaolDy_YAgxjqaskgVBLqZSsW5lt57JIMde4NE__absseX9GpJuwJ8SU9PwFGsIGbcuJJYGhIWRs0r13nvjkPjeSuF" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfAk_hA7ri5Rc1hRsACLhE43QYHZy6R0OkoAWq3rhbz-knyGL7DDN2FAnQl4Djo31yurmnuOkhO0tOZaolDy_YAgxjqaskgVBLqZSsW5lt57JIMde4NE__absseX9GpJuwJ8SU9PwFGsIGbcuJJYGhIWRs0r13nvjkPjeSuF')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfCJXKd9woGHmHZK1BQVvjnlF6H_DxzbZ4yEB8UEEVx-NXpPaSHdVjjxiU9eaLIxedPEUdYR-8bfGsfMqdaCad5YIxpQYVBKv7eMtmQZu3kAVK0hylH2wcnTWNiLtBSgQtSjFAjTTbw95qTcV5OSGkRExL0A4y1UMkuQds8o" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfCJXKd9woGHmHZK1BQVvjnlF6H_DxzbZ4yEB8UEEVx-NXpPaSHdVjjxiU9eaLIxedPEUdYR-8bfGsfMqdaCad5YIxpQYVBKv7eMtmQZu3kAVK0hylH2wcnTWNiLtBSgQtSjFAjTTbw95qTcV5OSGkRExL0A4y1UMkuQds8o')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfAG2mOkdBx0HUfkqUhkL0oXpQy3mRYt72-FvkczK8ExrZh_Pn_OfapjbFEUt3o7CaysMXb8e5AvKSsOkCfW8bDm9eSEu2xjDvjLeAZlAq-qtwT_LBSGzKTnFBnVMQmMJfobJWb9vOdq0ATvcUFYem4VHEBY4BC7Dblz0d9F" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfAG2mOkdBx0HUfkqUhkL0oXpQy3mRYt72-FvkczK8ExrZh_Pn_OfapjbFEUt3o7CaysMXb8e5AvKSsOkCfW8bDm9eSEu2xjDvjLeAZlAq-qtwT_LBSGzKTnFBnVMQmMJfobJWb9vOdq0ATvcUFYem4VHEBY4BC7Dblz0d9F')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfDpe6J2NAkqVa4ZPP5_IHQbZsziC903TSBoVhh4clQqpJufZC4BylqhIc_fBbIRR2etmo5z8sjy0Kwrgp3q3Ebm9iCOdZj6RcnsJGABX5KAFv1uQ3x9H7l_sN_irJVomWEviDaKyPZuhbWP_l7jUPenTUtNsFvKaOB04vEj" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfDpe6J2NAkqVa4ZPP5_IHQbZsziC903TSBoVhh4clQqpJufZC4BylqhIc_fBbIRR2etmo5z8sjy0Kwrgp3q3Ebm9iCOdZj6RcnsJGABX5KAFv1uQ3x9H7l_sN_irJVomWEviDaKyPZuhbWP_l7jUPenTUtNsFvKaOB04vEj')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfAp-9h0BKx9AvJYXxAEV6nS4SCwJ7cGznr7XtHVLHoFHJwPYDSU-xsvrAEO73bwEjlTWWNjYdeR5eILLMzXkmYBMaNJUXI_mgVFRt41ufQBacFDhONS4Lg4oMs90HBsAp11IzyYRfX2jrreC4FZCytC-m9bLiSbxEiWDrdS" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfAp-9h0BKx9AvJYXxAEV6nS4SCwJ7cGznr7XtHVLHoFHJwPYDSU-xsvrAEO73bwEjlTWWNjYdeR5eILLMzXkmYBMaNJUXI_mgVFRt41ufQBacFDhONS4Lg4oMs90HBsAp11IzyYRfX2jrreC4FZCytC-m9bLiSbxEiWDrdS')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfAYUW_hMho_o_obQuUlj7ZNofDTd1TRcsTUVKq9OpBRBCrl_l1Z_khYSchwRKzNpbJqfflAh-Wvlk_ki1ydlbwr8wAONuyEJYPZIL9Sc_w3hmkkc8M3J5y_UKeAZXJy1pZR40kNIzM2HZoLtsyH10_lLMlnPTOKj2yO0jHk" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfAYUW_hMho_o_obQuUlj7ZNofDTd1TRcsTUVKq9OpBRBCrl_l1Z_khYSchwRKzNpbJqfflAh-Wvlk_ki1ydlbwr8wAONuyEJYPZIL9Sc_w3hmkkc8M3J5y_UKeAZXJy1pZR40kNIzM2HZoLtsyH10_lLMlnPTOKj2yO0jHk')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfAS0h8b45itGFk0MaZZ48ZCqkbJpVwrLPgaMvlM9TNPUr900pmH__LycPpkz8kYZ0Ps5lZM8FvOnnP1Fd9fB4sMt6xiq4PajcnaGCrvazFMX23NctJ5-Str7wtXnGeeWqxpylgCJVtpYDQplMKafD75-Pf87Lj5ILl6ohjK" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfAS0h8b45itGFk0MaZZ48ZCqkbJpVwrLPgaMvlM9TNPUr900pmH__LycPpkz8kYZ0Ps5lZM8FvOnnP1Fd9fB4sMt6xiq4PajcnaGCrvazFMX23NctJ5-Str7wtXnGeeWqxpylgCJVtpYDQplMKafD75-Pf87Lj5ILl6ohjK')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfCzK4GyHDQLmtGxo6x1GJIFuvx-9PQVYraLuNA6FwBJNKEmPTJs7w8aEXIaUc20ItC42pMV28Df2fQpWUvXYBG1QSf0Xf_n65YckxBmX2sCfgrxM8yh5OmzuhoX3Er9-T3liKc9HFRjfNl-3umxPZKe5361dmOm0yQL28kV" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfCzK4GyHDQLmtGxo6x1GJIFuvx-9PQVYraLuNA6FwBJNKEmPTJs7w8aEXIaUc20ItC42pMV28Df2fQpWUvXYBG1QSf0Xf_n65YckxBmX2sCfgrxM8yh5OmzuhoX3Er9-T3liKc9HFRjfNl-3umxPZKe5361dmOm0yQL28kV')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfBsjhpaUyV0moQiio1gbyHrvbxDb1qW1Rp052PsqIrGVyLqtfLHThGlkgJNX9hw26t45cIq42PPXkgs6os0IikfgGZZBFTlwMWrJSdclFc_xNYX-Tkw3h1e8geHB2k2RvcA7yl2i1wehZh6S-ayfSrnpYGumSqZNZO5-dcw" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfBsjhpaUyV0moQiio1gbyHrvbxDb1qW1Rp052PsqIrGVyLqtfLHThGlkgJNX9hw26t45cIq42PPXkgs6os0IikfgGZZBFTlwMWrJSdclFc_xNYX-Tkw3h1e8geHB2k2RvcA7yl2i1wehZh6S-ayfSrnpYGumSqZNZO5-dcw')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfDKlFt7J08dHGqfrcQwbd1DZsPvk_4HBg9BDRA82piubwD5vuV3EryWjcTytnN_EpWiZCe2AASpwSy-ObhQR57yCfqYJztxs30kq2u62muHruUSJL0x8y0d3M82vvOAomR945HFwhuV6mY9OXi__IqGrZ4WoOpQOJHSIdfn" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfDKlFt7J08dHGqfrcQwbd1DZsPvk_4HBg9BDRA82piubwD5vuV3EryWjcTytnN_EpWiZCe2AASpwSy-ObhQR57yCfqYJztxs30kq2u62muHruUSJL0x8y0d3M82vvOAomR945HFwhuV6mY9OXi__IqGrZ4WoOpQOJHSIdfn')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfAbzFAbhm-48zDvcUYVpnPY5760FWac7OsStAKR2WK9UrV9N8OTLQWH3_IfSZDWAMx-ojKb2HEKWLtTJnkRQuyGm1yJv7F1wyee7yei83D94VfDDP4Pxmkywn3p2hy8-SYHuP-vwQzArX3yQriuExtHF1QFLDjBPPgsmwMC" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfAbzFAbhm-48zDvcUYVpnPY5760FWac7OsStAKR2WK9UrV9N8OTLQWH3_IfSZDWAMx-ojKb2HEKWLtTJnkRQuyGm1yJv7F1wyee7yei83D94VfDDP4Pxmkywn3p2hy8-SYHuP-vwQzArX3yQriuExtHF1QFLDjBPPgsmwMC')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfDdCO8_84QdFtS047M56RxpwqSsD8GF2f9FuhDLTErMdKqtP_lt36yBaZ85qTiIbXKBSOsWo5hbLuBgZ8yd45qN4hhxwGz2S64CUTiC1aIj2TVtKSps1mtECCmO9gIrUb33V0KpBCvqco1_Qd6ZNft-8b4_8yvDzlREAzWv" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfDdCO8_84QdFtS047M56RxpwqSsD8GF2f9FuhDLTErMdKqtP_lt36yBaZ85qTiIbXKBSOsWo5hbLuBgZ8yd45qN4hhxwGz2S64CUTiC1aIj2TVtKSps1mtECCmO9gIrUb33V0KpBCvqco1_Qd6ZNft-8b4_8yvDzlREAzWv')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfDBhC6t5-z-rvyD7g-5Pus-E7H7WLxIbsFus_EV-1167J0Y2EnPUeg7PTU6onVYgUC8zdIm0KHB5GL_xWSpvTWCSrPN21NCEw4d063KwV_w-Ia7xYwLOL09f--kwt5Mw52CNcGLWrRtVELYpt4tTIDBNMr8JbtRhW5AZrjb" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfDBhC6t5-z-rvyD7g-5Pus-E7H7WLxIbsFus_EV-1167J0Y2EnPUeg7PTU6onVYgUC8zdIm0KHB5GL_xWSpvTWCSrPN21NCEw4d063KwV_w-Ia7xYwLOL09f--kwt5Mw52CNcGLWrRtVELYpt4tTIDBNMr8JbtRhW5AZrjb')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfBG9IZXTLMo42HYAqC6dIljBuci8CpNTrZQq3cNmzGbCr3squ4C3UjvX7ubd68QL9vEZ262b1rC1YuJewVg0AuzTjdPxzdpelVqLlvECcbT4SdXs8VpEE560r6_O7Ko-eRyXqWPY6NoUF5aNT3hz-GndlzrqAImcqEU2ys2" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfBG9IZXTLMo42HYAqC6dIljBuci8CpNTrZQq3cNmzGbCr3squ4C3UjvX7ubd68QL9vEZ262b1rC1YuJewVg0AuzTjdPxzdpelVqLlvECcbT4SdXs8VpEE560r6_O7Ko-eRyXqWPY6NoUF5aNT3hz-GndlzrqAImcqEU2ys2')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfDWsmWSSN7QLgGJuB-L2zi9PUSXjGKSe8Eb_FhN38-o5zYZ5TQDIOfR9fEJeYxuv2aHRrQnRfZ6jb1LhhEkdr5WCawqRqEcPYEe3y2Ybp9oUGlHjxxv3HFD0YdJPZD910s4d-1IJXV88kOhBuR5BdH-Sh_6iE2LabgMdEN9" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfDWsmWSSN7QLgGJuB-L2zi9PUSXjGKSe8Eb_FhN38-o5zYZ5TQDIOfR9fEJeYxuv2aHRrQnRfZ6jb1LhhEkdr5WCawqRqEcPYEe3y2Ybp9oUGlHjxxv3HFD0YdJPZD910s4d-1IJXV88kOhBuR5BdH-Sh_6iE2LabgMdEN9')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfANyVeiPDBegI13jUuDTfmG6_gNU84I1jBqbpzOc9XflhKRO2WeDVRfqH61QyXTOrK89rMSEE-65nXOM23L2E3vQ-iayuTSLuyRqnn5196QVDEIRbephm-HjWi3yW6c0P58TCia7vAIHh8CjQerRqT5iR4LiHTbAT1ZzcvG" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfANyVeiPDBegI13jUuDTfmG6_gNU84I1jBqbpzOc9XflhKRO2WeDVRfqH61QyXTOrK89rMSEE-65nXOM23L2E3vQ-iayuTSLuyRqnn5196QVDEIRbephm-HjWi3yW6c0P58TCia7vAIHh8CjQerRqT5iR4LiHTbAT1ZzcvG')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfDXbeO2xyJ0z52gHPHteZFdyaapYD51nQHmUZor3f-n7_UGsrkaP5dbq12gv7_jB_KxsfVe24K8Pbz8dGBR0JtEedXR9n6WsK2qRnir9dZ3JEtNzS6yatCjFBhkcqw0Q_wiiYtqtGO0fHDZvCd9Ex-uEe39gvc7JcMZ6A" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfDXbeO2xyJ0z52gHPHteZFdyaapYD51nQHmUZor3f-n7_UGsrkaP5dbq12gv7_jB_KxsfVe24K8Pbz8dGBR0JtEedXR9n6WsK2qRnir9dZ3JEtNzS6yatCjFBhkcqw0Q_wiiYtqtGO0fHDZvCd9Ex-uEe39gvc7JcMZ6A')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfCCHpnPpq2nckIq4HFIW8w-P5mkTklCG1Z_hIiChqEnTRujT3Woql4zqnbaNn4TuoWI5JMAQ2HWWKWOQnPru57CtIQpu95kBlvXqQOrzXIYmzn2UO2q57IF_cdiklXnsL0uUux2PIxV9_ILMzmZk3j0QMx8nlnBHWLfMw" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfCCHpnPpq2nckIq4HFIW8w-P5mkTklCG1Z_hIiChqEnTRujT3Woql4zqnbaNn4TuoWI5JMAQ2HWWKWOQnPru57CtIQpu95kBlvXqQOrzXIYmzn2UO2q57IF_cdiklXnsL0uUux2PIxV9_ILMzmZk3j0QMx8nlnBHWLfMw')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfCTaSQW2WFQXBG6-bZVl5UO5Y_bXlzYpiyxA_HZqVrEn1lTRVYbOTjDIBW32HS9L3UkGrP3pHNsbjw8KjNs0h9tEsxGavoX0L-fX9zgLdJWh_o8HJbYqRXOb_rXciNYRc_jRBwuK4c6k_C40h03DmFmEqQuFOpphgFeADhl" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfCTaSQW2WFQXBG6-bZVl5UO5Y_bXlzYpiyxA_HZqVrEn1lTRVYbOTjDIBW32HS9L3UkGrP3pHNsbjw8KjNs0h9tEsxGavoX0L-fX9zgLdJWh_o8HJbYqRXOb_rXciNYRc_jRBwuK4c6k_C40h03DmFmEqQuFOpphgFeADhl')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfAsx5P6-SpGQXGNIc-j-qxhXxtOy93FkOdxgfAWxCl62imn___OkcFeCGyLNt-ajqt2WSU-j7JAvI5LesuwMVFS_5gXm7y7bPncPszBDEt0O-1o0i1XARyN0zaYvPjJiuY69dspxmyX2PduqZTzVp7nURgaQ0THEaWgFqg6" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfAsx5P6-SpGQXGNIc-j-qxhXxtOy93FkOdxgfAWxCl62imn___OkcFeCGyLNt-ajqt2WSU-j7JAvI5LesuwMVFS_5gXm7y7bPncPszBDEt0O-1o0i1XARyN0zaYvPjJiuY69dspxmyX2PduqZTzVp7nURgaQ0THEaWgFqg6')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfBTT1sXDWwSZOp6YCiWeEGIkyGy2VoEutf7suxSKlJmR15yYL9GY6gB4FJr9JJpdFZbnwj_ceNs_sH52RnzHfO_B3KBHbz3Mjs9q9iBk0nG165hBqTRjM0NOaQlijDHmwzixZkATGejUkEicH3I7L-JEfcDXKXtO9DJ1i-6" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfBTT1sXDWwSZOp6YCiWeEGIkyGy2VoEutf7suxSKlJmR15yYL9GY6gB4FJr9JJpdFZbnwj_ceNs_sH52RnzHfO_B3KBHbz3Mjs9q9iBk0nG165hBqTRjM0NOaQlijDHmwzixZkATGejUkEicH3I7L-JEfcDXKXtO9DJ1i-6')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfCoz1f0zoOv8EgeCd60FL9xn2og2O7TAzJv2NMPeVGoi9ELz2j_4GuPjUQFASmHbmDsEofJ3WJtzo_t4cMOOqAKE2l-G2KdFoBdqyAd5ZhWCW2eqvLBZYzTzF39CAq1LuJ-KBU0aBbuzjs8cUU4Lx4LPWnaedqtunar-uBN" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfCoz1f0zoOv8EgeCd60FL9xn2og2O7TAzJv2NMPeVGoi9ELz2j_4GuPjUQFASmHbmDsEofJ3WJtzo_t4cMOOqAKE2l-G2KdFoBdqyAd5ZhWCW2eqvLBZYzTzF39CAq1LuJ-KBU0aBbuzjs8cUU4Lx4LPWnaedqtunar-uBN')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfCN_UoDnh95NLTkqEKBeLmIaBf8tP2DhhV4OJNbR5SYeUrPAPSQVObH_q-KXWd_yR6GhSTH9D93lFW4q_4DtWKrp293ErVv82FZzxCTltN2Ys4qoh3n-2_IA-crji2dSgiqXuiWFgGvwqcGfTilKbQeDCZM7kDr0_LlMuA8" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfCN_UoDnh95NLTkqEKBeLmIaBf8tP2DhhV4OJNbR5SYeUrPAPSQVObH_q-KXWd_yR6GhSTH9D93lFW4q_4DtWKrp293ErVv82FZzxCTltN2Ys4qoh3n-2_IA-crji2dSgiqXuiWFgGvwqcGfTilKbQeDCZM7kDr0_LlMuA8')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfCTJPK1LVKi-2EtOWZAae3BlLHJJ9iY6hqqK5CLwRrvo5O177SqAYT7frYbsFUcckqzEC4-Ljjb67YmH_ZdASYSpra7emIwd65-oaLmluetgcmEXNN8aZeEKITtbgPzQNi2fQr0f3b8ysbeypcsv6OgjFvR9UusAApDuUXc" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfCTJPK1LVKi-2EtOWZAae3BlLHJJ9iY6hqqK5CLwRrvo5O177SqAYT7frYbsFUcckqzEC4-Ljjb67YmH_ZdASYSpra7emIwd65-oaLmluetgcmEXNN8aZeEKITtbgPzQNi2fQr0f3b8ysbeypcsv6OgjFvR9UusAApDuUXc')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfDtm56AAHr681E53ipmSTzEGsvnMnRbu884PiYhtwExvSUXngX2mdZE7VmwcaMlnQOPnt3oBDdjvUz3gtyqIuEaT3KePpWhykyd1GnGafSuicCcRdO__5rC1X6_6RBvWyd2k2u48Ua8qmqDX2M3esqYCnQnEdxabCd5q1Vn" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfDtm56AAHr681E53ipmSTzEGsvnMnRbu884PiYhtwExvSUXngX2mdZE7VmwcaMlnQOPnt3oBDdjvUz3gtyqIuEaT3KePpWhykyd1GnGafSuicCcRdO__5rC1X6_6RBvWyd2k2u48Ua8qmqDX2M3esqYCnQnEdxabCd5q1Vn')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfBLS54Hk41FvFw5drBrvcbawnaw_bacxvH3Me1rQno3W2TpFdQh1VnG-DumHA1FV4z7FUNKMAqEIF6OWh_X3mE8SvoOXseG1VrtV_Qp7AftVBF0riAaMKCoZk2yk5zqxlD6IsmT0N4M3B2Avu319j4jaWhRSESuJ3oHOg" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfBLS54Hk41FvFw5drBrvcbawnaw_bacxvH3Me1rQno3W2TpFdQh1VnG-DumHA1FV4z7FUNKMAqEIF6OWh_X3mE8SvoOXseG1VrtV_Qp7AftVBF0riAaMKCoZk2yk5zqxlD6IsmT0N4M3B2Avu319j4jaWhRSESuJ3oHOg')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfBmNhfFL9yWByuVM8vJkWLItQ0TqKZIUd1UwDAGjpijZ95QVCRx5Jios2oaUEZ1viRyGdmmIACHUZYmA1xIh9ELD9dX8KSIK8XjVPWeQ0ORUkLWehbz4mQArv3ahrOXdNE5XxqYE9OfYNPPDVIBdc2tLLLtxXAUpNS8jd99" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfBmNhfFL9yWByuVM8vJkWLItQ0TqKZIUd1UwDAGjpijZ95QVCRx5Jios2oaUEZ1viRyGdmmIACHUZYmA1xIh9ELD9dX8KSIK8XjVPWeQ0ORUkLWehbz4mQArv3ahrOXdNE5XxqYE9OfYNPPDVIBdc2tLLLtxXAUpNS8jd99')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfCzfkq4sGrPID-dHKl7hiwO5-2B05hhzDm007OOK0Ug_N7KDGa-4M7zVi8F6fFwxRCsR8C3NiK-vZn_lh6bDrXWRudDJiQUiaTqJAUPgfwTwzH4ajUzLLwY2jtJh_OM8wIBtCXiDBoMW7vuYVl9x7fqpZ0Gvw5sopDa5g" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfCzfkq4sGrPID-dHKl7hiwO5-2B05hhzDm007OOK0Ug_N7KDGa-4M7zVi8F6fFwxRCsR8C3NiK-vZn_lh6bDrXWRudDJiQUiaTqJAUPgfwTwzH4ajUzLLwY2jtJh_OM8wIBtCXiDBoMW7vuYVl9x7fqpZ0Gvw5sopDa5g')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfDYvXu0BpNq18UrIFsDX6sCVedBbEZC4U0MAgEuaCkwRFw2S_0saYNl4kVHMWfFxIQEmgr02mrdxZgfxV_uRoOODchGsYxoNbnXhP5G7s5TWDIrAyK2aGZEHJZfokp1crVvWbwwnQhdhpm2J2QporN3ZRYUP6fqtU-dgRgf" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfDYvXu0BpNq18UrIFsDX6sCVedBbEZC4U0MAgEuaCkwRFw2S_0saYNl4kVHMWfFxIQEmgr02mrdxZgfxV_uRoOODchGsYxoNbnXhP5G7s5TWDIrAyK2aGZEHJZfokp1crVvWbwwnQhdhpm2J2QporN3ZRYUP6fqtU-dgRgf')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfCV8vk38iQeOCHhl-jg0D5nz6Rir79Ca680JlkSkmWEIusqcHWAMB3M5L6YEAynYWyjFP6OJbD-r6mlVrkjdVfpdHtIBBIKjObDjzfOoiMRRN3VD4cSEq8v514KbrSESdNCmYPaIMz3vz9kd1Pxbz_ClcqPQ2Y72rSUBjuY" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfCV8vk38iQeOCHhl-jg0D5nz6Rir79Ca680JlkSkmWEIusqcHWAMB3M5L6YEAynYWyjFP6OJbD-r6mlVrkjdVfpdHtIBBIKjObDjzfOoiMRRN3VD4cSEq8v514KbrSESdNCmYPaIMz3vz9kd1Pxbz_ClcqPQ2Y72rSUBjuY')" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfAaq2HS4LG_M6WEe1Sj61jLSdZ4RIiPF6_NshTMuJJxsGeETDyPx5dUba6rgpfaRDfQ1-0qXvTI_PKBlyluihflSZfh6GGzopRyiCtmNXqvruLebzti42ttpwI9zHa3kpRfv0RMT5GnqLuN8axBJzeXH94cUaAcdSnY0sxh" onclick="openModal('https://lh7-rt.googleusercontent.com/docsd/ANYlcfAaq2HS4LG_M6WEe1Sj61jLSdZ4RIiPF6_NshTMuJJxsGeETDyPx5dUba6rgpfaRDfQ1-0qXvTI_PKBlyluihflSZfh6GGzopRyiCtmNXqvruLebzti42ttpwI9zHa3kpRfv0RMT5GnqLuN8axBJzeXH94cUaAcdSnY0sxh')" />
+            </div></div>
+            <div class="swiper-button-next"></div>
+            <div class="swiper-button-prev"></div>
+        </div>
+        <div class="control-bar" id="control-bar">
+            <label for="transition-select">轉場效果:</label>
+            <select id="transition-select" onchange="updateTransition()">
+                <option value="slide">滑動 (Slide)</option>
+                <option value="fade">淡入淡出 (Fade)</option>
+                <option value="coverflow">封面流 (Coverflow)</option>
+                <option value="cube">方塊 (Cube)</option>
+                <option value="flip">翻轉 (Flip)</option>
+            </select>
+            <label for="interval-input">間隔(秒):</label>
+            <input type="number" id="interval-input" value="5" min="1" max="60" onchange="updateInterval()">
+            <button id="stop-button" onclick="stopSlideshow()">⏹️ 停止</button>
+            <button id="start-button" onclick="startSlideshow()">▶️ 開始</button>
+        </div>
+    </div>
+
+    <button id="controls-toggle">⚙️</button>
+
+    <div class="swiper swiper-thumbs">
+        <div class="swiper-wrapper">
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfBBJsOIeq20KnDyVfJ12LqoqTGrGqmjYZU_E2DRPEGVxLQNsPNQFww-ABCUTJag2-UzlmiVXffd52qdI8bh6XS_N35ZyD_HWqa6jVz0NSpkZZzK1ni-nxc6jNcF7wC3sv3MQ0L-6P2mFZp10waaUnDTElP-rWj_VULSiw" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfCFcButJ9g9RvinX1ZWco1wvblBieFm4DYOf6wNiYIp652OZ_kbv2CQmEK69mVbDhShQuaiLwnoGBbbN7eMViOyDYUFH2g7hn2dj265LSOx58oVT_mxPE8mOBkUu7-XibEma_-2j9whObhDwBzRJmMjeueXwiJKQtt4Wtez" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfCd10LEXz1opvNL8glr3jqybawOuvtR83IdZ1LhsahV1p6UXUFMEJoZnI1wiZoRzY0QqJB2ZEJRTsW1jA4EoiVObnRMqhEdX03ihtdvLzFLWp8nhhTGZmrTHPYZBNbujtpTYUUvdeXqu4y5Gb_PQUE6RGlEazwbuL0PmUJC" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfBIs0xLrdHAOrtzpS-xf-6HlVyfNcEXoEZY_fi7Zhn8a9fEETb904Hnop8N_pCY4ZtgqfNUJjRKJ-GJDDJPU0QJYsAC6ljWXDkI-96E3iHrc42OsTBaa9OKoAkQcq3AUS3HOPqC34P_zq8o0jWwfJDxu0OsVncN-hyWMA" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfBWaylAQueXq89I0-B_7ggRluKNME_OBqSKNmhYbbzJ3ubwp9dF8L4F38ilcA-NshhGC6nkmKnyyfzytVkCLutu440fQ3cC2EkhTT68q2qiHRcWXrUyO_QOiiXaHuuYvdOVJEXlLyUiawTwOtbm5LrSnYLjDoMmToYgQDz4" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfCgqqqJm0fuTZ6d-LdebQ2qGUUckmnjCd9ZJ3ReYx0DYFL8qlmyWc0VFTA8SqzS82vB8e-Wfh1R-mtPRihI0Dbm56vYXq-9ORMgWY6Sf_L9dbB2JcUOuWGiZLEfbeezuYQVBIIVbc1arBJVIcctKYhfuu34mnIG6Eoxcg" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfBEbBft1RpoicX2n2kNyT1x0xUgVpFdshL3A17uK_Mpnem2C6N2I4NuyKUxHUcsDiVRqt51mjs18vv3xhWRkR-eTTqOS_r4VNuXQkQJ7waecsGqo9Z8o6enJ1i40OKnD-WEoPJywvkW6FPZrPw7aDXduPISTpPY7hep470f" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfAJp6P1l1WpQg0wnbNu0mojGTgygmFWMJ0FLYAZ-tvrCdNezDUn8iGoooHdLQ6EZe3vikyb5sfUglgg_lHzCCRPiRiSGp7-aY-hwPaT5hhHoUCAPQtZdaO5Vae2ttTwE8acQn2CtH2G5jfr7-9WLhh3kX8-LfqFuzeoLQ" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfBZK0JLeqv0L0Vsc3_rGzTRAUjD1gvZrBSTc12iciBTt6YVTekb7JLGU2aeLXPZLCsbytvAkPZFjpd2WOCFEbBukTIIctmTerdz74yhxEmzYy7ZLeSl7cky8JJ79ehnEtcmOUw_1XguMflyz4wBPKo_-ptWUoUi52_cFw" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfDO21sXq1Zn8Tgh7bqZC_d30KzDE6KdBbKLkfY6WJ-c_l7mGJjQADc8DN8Hy8UzUn2ypmrhdIHX2c9aEdpDYdztUErGoY1IB9dy2jCaDv0Y5m7ugJWu5grQjX6eM8zc0mlP7csyQAFv8FsnGBBs1Tncvbcq2VY_3PLt2Nwp" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfAhleA8mmieBtibYBWluPOESVftdA0P94ec-Q38G9upg7_ORkYHEAbfKbQFXbDA711hb3n5P97DC3jKQ7NhaMqE3ni6h-BIMtgv0QI7CRsJZedEKnjfuHk1mdSn_xNTwumU2-G8Bp-0h8qLIXVyWzJXtSAXeElgEjYcow" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfC-EbkdFn0WAPICBf4esyHjbP431gP8dm3uHzD7poqh4u4ZgW1x3nJy3ftMs2afsglKy1WwduIASWAfIQjnWCD2t4vIapVmNCpVOrY5jmMDNpFXd4vrB2L-I93yJ8T90qCM90wxidMIQWsQPVg8P-KYW5zI0bghR6zvxc77" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfDU4S-pA7zhW2sP10ULvjc9BiIDoztzNp0fJGDsOe8L6p9Cwi2FWOAB7NjZxeIGLhOoww-McGm3gdOpApcQM9m_FO76cAMlKdXS_uswFCHkhIGDL-1c6YboR-89gZd3EJ6XbJ1tHwH_kx00O_e7qJQZ3kxPHoTcKECWMw" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfCTZ5agDx9FoX1HHFN2DSJFqJQp_Ao-ytG2RROA7Gq2dwR20UMUfk7US8fJkHTLJ8Fju3m78JoAA-AKNBhnBXIPiLkdRQKidDkhXTKAupXp2tzG7xcS4Y5zLs-NNPvzIxvgNtHdjBIxmETLx7-kybsy8z1CHxFtWoVvdg" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfDvVWzrAaOXqozNzfG8H4Hf8eU48ixTByDsFz5JIqnjFAgnHc0pPqT7EOZNEYNEdMIVZvp67_ZQS9mA0Xvakdvwc13z79JXe64Si9NkoD7YVS8260R6p8s5myksWciBTwBCDR_EKzbmCyJf9r2ks21hKT61vDXDBfC-ZIAr" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfB6iiPqxmSae7m3q63C495aqMHu5bdM6fTL9O1KtDxMHah8KI7Z5llC2deuFUeVXxpK8Tj291fG2iJJKtajao-Jfdbp7bl37SuvXagenuUS5iZ9035npJQlC9fee7J1laOLA0H0aAsTZocBC7WSIi3cdINocR9a_I5wHK22" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfCwseE8yzfmRGX3J0NZ0a6Sq46o26bhbG0Pc9YbD629sABd-6cJ9k3UsGVVlfArcMrGmGlS_j5I7TG_tEbQHi_YnV8PE6bpMetAUzhWSm3YZUhOuYcDyqZk8r-iDsyXaCPrs2E_H8zJlLsRUDYnSIK2CPufFphiugo6Pig_" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfCjcgpZYMwGEdZNIzH0idpkCYx0qMaUrdgPDzVL-bnPb0-z4QRiSJqzIszgs239rALTd-rgFI78z98BRlS7fWY1i1GRBargpXECxHZYmNFnIODswlXcuO9G0JXZleSjE1pvWrB_DjnwXpt4cZpYOY8UfO9LBqOU_7HRCg" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfCGEITUCax6fwEmpyX8H-qnjq29NVgpTtn8nF1C1xoxFY09o2I6RJpIcTvfmo-zec4n5BH4NuC5QUqCSWxSozj6OMjL0OlVWxdaKmxg_Hwj0RcMGDuocbDvXmcxujyNgvJP-5MzWg-28GySunZwjCGUxOrzQ6j62B7XW5UM" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfDdwtkH4ybGlcTAW0ol7QRI1ueeCFMoaOCQ2ZwrCoQyYybrCLpAca3hDTcw7bcxR3UYnxWzL40bRYxCubDrIGSmOSBcIKXDSaUpdhgWBmHTOvqnCcRTN_ybKNRBiv8UK6e8BBOUEW5KyCBVA9UXmWKjRLMszgGOwBro1g" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfDMQupL1W5LKuCIzLkQ3X0wn7nPfGgMsVBdeTE0_xnFPkV74ABDXtQzhaR00ImGmOo23B0VpdSwe_xYTSXmnZVLaaZgXA29FU6TU2_aferzppwzb3a8zzWDkzUmaMGDJPY7FihXgFs5Z5Yjvxzq69AUT_ZmIGU46T3wGQ" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfA-xKxEPUrq-h_jOWCTkB8l3tQDIGKj1jwiLLV6CSMXLaZv7DsPg9qTJwLN9vdT87LthfPwY7tzM-xpCjSKtIBY5qiX1xPeMO1Tnihd6NBXHbjZh9WbxiTLmvtwVKsTQfA18oW664hsTyOhvi3Pk37g0HXgzsdpKu4-CM06" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfDSxH2ogpfXayJO-fY-1YpvW4y-D9M7kS4_YtGGORpMc9nGLD_BZi2c6X-KAjSwYn-uMlZYkCtLBQ6RYDBqyC1g58k5CfG3jjQQaHMl8_FKX82H2ckrxpXfi3Qu1nsOBBa_x54p0QdtHe62BQtHM_mJRrLT_E0THN9ct4uw" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfBIEnoay0WmDygpJamTF6A_ejVtrqnKLZzMzNf7VTli4UamZjzpOtawZ04lYc53NcgdntNBzLELHTGSgYrtaG1WUQNE0Mnnwqh7cgebLjPzm8y6X-xp8MZFXXn9c7cTQSra6PB0tI5C0DXKflYkrwLL19fWZi-7Q-PlvUen" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfDaeDHWXxjvVpBlYENDqgbrI85ALppmIZz5p0jRvOjaTqrB5Yv5zlbL6wV3y2qysaYBcOVa2Vq8GZJgCzNT8hRASEDMoRZw1qLDwVBUKM0op-TMCCKFGZORyQJCPBLv8RtaevV_u-j42dXusM4paGIbPOPJACaWQnnc7A7A" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfDqGArk8hjCGZNOFubHmuAKmv5r3q734BFOq8IGC-rHL2TPIeZvjQZxzlkntVw3htqavPRzbuimlUw_tyhPNiNdyoToojJXv1QVhIEhfedAYLM6KIa2c-mAR0bGRI_2fu92fAkegrC4y6SL1rC2d6Io3j-yp9ucsCum2oyw" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfBllvyKQnGS1Exv4KWcAIhMk4B1Y7FkGyHOkSXVlBXPvQE_HdQXRDjNCXrm4_IRujB6NAWDn8E4D7ICRPv4mSSvT0ybjYLVqSUSn0hST8VmkCZhwKqBkIlEpWkBny0IHUdjOnxCS87rbAejwoADuojwvHEBe6fb-OKytQUL" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfB1TBrbu-F7vWIN6xtVxqdK_megmtcGJ2u_oNuT4dizVZoJ_bsCyb9OvnTuMFQH7y5gN25vOLyh9bPwOH9yIAeoDXK-_XLJ_KqUr-PHrGxBj2i_ZKyGqHI1GOnk9FAGAq8rp6mHg_5I-PRff3COK8s5A9oh984rit-DdQ" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfCKgJ58W3S88bWHHmdIWdaarOJoiWeiMdeJLA6_aL0_FAOu-TyMaZmRrt53Kux5658NhzGk8mjueRte-9WKeE9OiTXvE91gHVo27PuUwMRNUl1Z_baJC1gtOnBWQzPynEDxuNC0VwkIY37J67mCoiqDzzGjONLOzBcjefif" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfDldWMvAlRgW9yn-K7y7WWI3l-UCxnlZouARyKHfwPugwi4hUSAZ8SIx2uzCXoYNAVgYkDGkhp-icRO2nqdemKtEbHTx1jaRXcwkuUkDMMD-LHrUSQAtTEX3uk_Kwys9m9CMapddi6pdBMhVtaC7VPJSjTCSuwRFHYon5_N" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfDLsTSJ8CBq97XAIwTOknIrdMl0lIE7vNZZDU4dTDEYOb1_iX_IG_G_2Y1YrB2YCmsdnSwsCrmEU90Tz28gaC2WhZe9Ic6ZH3b_UQUv8rhvjtCrohnfBKytTSWqh4-3LNZv6AFI00988umPoW2H-kmxMxJBJCrXG-yv0QNV" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfAQe5kTSyAPdexXDfBRai6ndGPGHH3NusiRjVkj5M8vUd_dpeMd15br37dc6Cduv-yvqxs4nYip8YHqCy4BJONpUpeEEUrmEeUI85p0ld5nlAZ6N1LkpE9_xQHdC6VMEP1L9eVXBmjWss1kT4NyOGc6YkIUKP0Mu_yCnnBC" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfAiG2XDJnYxzT85i3ar5rQXdzMDe0YzoTEfzDRO-SNBwNTMsFNbZ4dxEWi2GAbiMEbFlduRaOnXz8a_DpD3RLVO0m4qM8AYnFaJnUQXyA6Fxoe6IiwWJM4guk5I46m3gSVBe62rDmYGV9nl8VRVza_IK4lTWiEc1Kr_Mg" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfD2F3iovxp9E9_DrvKuYh_0J6jZc3Ee5ZfDOI7N0jsgUspYu3TUam2V0MUdTJCsnYA8Mbhu-kdvWtNdwbNDQgUUbUSuByRK-tdFLXHtO8uOlEWL0jK9aMROU-TNlClsfTPePXy27mncML-Wyv5UtJ5pGyGPnvs3USVEkw" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfA1qGepXK28wLKCw8E8KB1Ib0mPIROnulfaGauUhXEBHT0jZxrrUCaC0oHnnhAZCkItZM0DnopCzPeX0f20DKPvgjZaQjqRv7sbvMaYJ_badrtTtqjC1ZVLOyXc-nfcmumG91sD7E1dnbJhD0WJ4CWzZ-zD4CbZsbH7Zw" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfAo3_c9LEGctjW48eVLxzAKOSxRtsIoVh8RjZ-fyOawpB0nM-TrqpUHM7jbzDTCYb0Njx7iarw-bS9TaCDQ1McWWilfTcZxB2atg9j7CGP3NUN248l7tyD9XvqLiOTRBzxqYQIJI6Q2VkjsKYptO2I44Njea-ujjNX4gy8P" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfADAWzt_HnfapejaI7Y6yjsbH08ubjfw_5gNiB1F-XbblBLDBlTYye5jPiqugtE-T1oCKQBWAXGiqCIYgIopEcA_7IDJnH8TVjO-Gan5ig7KXlDPx_N3E6Sy2mlsL6sTQnnyXe_YEoxsTTfKfSIMiaJb3ekhMSfYmdz1phe" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfBR3lrcwfItxDf4MtOurm-rqPEhnQVe1botGug990FcH0bM9Zq5h7z_leTrsQTQO5Rh_8Vq5NwJAYINkTCm7uaUGkk9B6XH29ipNbOhuDuecaSf_ps_op6fK07Ijseivxom6EuRhs4WlHWnHgJnS7bYr8Dh1uP2ea3jnRTc" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfCbSweDk7GFahxY-sr5yFmqDYqnXQQ9mF9OtqMwjnh4oHhKWJOEoLVNLXR0EywkZFG8bLsZK-1i3xrcJr8mk5NeFxOAvogHuR_Eq9XpH_vYPwS2VguQIuT4vCiKFXS-V5uVlW2BDoKxCuiYd2_lgc91pZio-MFYHgF3irx_" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfBBDII-akOVSar-g1RO_iI3eK_Igc58B5s9oCEeL-tWK3GwFgl6h_7Q05fI-obE1tQn4EUiM7jJPKHcF31daju28ufAIph1CAELHLM96kmpoEw3ThC-d2h7S2CkjeaiJHKa6BkbJcDJcmFBi6vKJYAUfjKVvD6Phk9bRk0u" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfA7n9silLu-iy4W-QKkveku8NlyeRaS-2LdjL8bvbTR1R0MJeVc9SlSPOh7URuxCSOzNgWzkt31HHJkVY7nXKXzUoBNxmqd0Xw355CDxMfMQcxhT4FfBkFez5LA95yZuNUZSqvBZrL7dBAEyarJz9jdYfPYs2xpxPzvdIuH" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfBpNeJnUtUtNLODLLT_u3qANmDv5q3cjj4XAWkv8bfiRJWPeTVaWkFv2MySb0ZgoqAFcudy8AcLZV_w7deA7FEfOE4iOdWM0MYgw871YH6Uv_9WdXVfDdpw8IA9JoLI2Y6esZV2-xErXRMTfTBFEqSKw1wRubE4nQMZg2VU" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfBI6CPubUgjLlzYaw4Py_xqmNgnPWnt_zQj4IIR3kCa8wTYJb1zU8zNpI8d2dzI0YqisyHojhuF0h7kOSX5jYPAK-h40M27Nl_ArWvZbp5MZko5momcODk37XYQH5ylGshZ-yiatIceFlisKhhI3BGLWF8lO7c57_TuC5Ea" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfCIsYbl9zF4WxjUXAGkoa7B_kDfFMxhHZ-pJOf1uTp2vudT51wFostQcih0v2JvnXf39_tbFPMF1IP-_bk773Afko3XYvMyzegQvzn6r7wUnZgcH2atgc7v2xVqEdN6e8wJznjeBnXvRv6tea1qaPftHUUwN1X6I837JsYO" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfBiXTovuR6KwZezKyoxUDDKFKLmZ-2KlDK_OJCXqn7yXl9MMVQrlALvgpzQ-2O8jVJzNgP9ng_t4Jd5EFuA7mz2iZbt61mIvEaIRjYwnRuYT_TMn8IXvlfmd6e04T0i1ovZ3vYC_el_L9aoQ0qjK6hkC4HbpiIw4HuryQ" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfDVluUz-DJHA3q6TboQ4M9rOGU9gGXt1tUOIAPeEyO6mFVaMztPHFztA43E9pftPKL39DLzgiDYmKXyYIp0DwZD6yv3IH1EK1gHvgrGaqP1ramI-vDHBX-CIjjV69KRIzwAL98HM4_zgnjHxW3L7X79W8A-wVGY3Veu7A" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfAGmnAejIkZSIRSHfrFtdt4gQNTREZf8ngvbGcYrrWj2AdnWO6AbIjGFl7yH-McrheRI91w0V9COnSgYiXVMsaOx70-PhpF7hoLrVgr6Vw0SZqRonOd2bLgwa1vxxoorjMek-UMEs9C9Avyel6Hae21FZeCFszzrTKE6GXE" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfAk_hA7ri5Rc1hRsACLhE43QYHZy6R0OkoAWq3rhbz-knyGL7DDN2FAnQl4Djo31yurmnuOkhO0tOZaolDy_YAgxjqaskgVBLqZSsW5lt57JIMde4NE__absseX9GpJuwJ8SU9PwFGsIGbcuJJYGhIWRs0r13nvjkPjeSuF" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfCJXKd9woGHmHZK1BQVvjnlF6H_DxzbZ4yEB8UEEVx-NXpPaSHdVjjxiU9eaLIxedPEUdYR-8bfGsfMqdaCad5YIxpQYVBKv7eMtmQZu3kAVK0hylH2wcnTWNiLtBSgQtSjFAjTTbw95qTcV5OSGkRExL0A4y1UMkuQds8o" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfAG2mOkdBx0HUfkqUhkL0oXpQy3mRYt72-FvkczK8ExrZh_Pn_OfapjbFEUt3o7CaysMXb8e5AvKSsOkCfW8bDm9eSEu2xjDvjLeAZlAq-qtwT_LBSGzKTnFBnVMQmMJfobJWb9vOdq0ATvcUFYem4VHEBY4BC7Dblz0d9F" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfDpe6J2NAkqVa4ZPP5_IHQbZsziC903TSBoVhh4clQqpJufZC4BylqhIc_fBbIRR2etmo5z8sjy0Kwrgp3q3Ebm9iCOdZj6RcnsJGABX5KAFv1uQ3x9H7l_sN_irJVomWEviDaKyPZuhbWP_l7jUPenTUtNsFvKaOB04vEj" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfAp-9h0BKx9AvJYXxAEV6nS4SCwJ7cGznr7XtHVLHoFHJwPYDSU-xsvrAEO73bwEjlTWWNjYdeR5eILLMzXkmYBMaNJUXI_mgVFRt41ufQBacFDhONS4Lg4oMs90HBsAp11IzyYRfX2jrreC4FZCytC-m9bLiSbxEiWDrdS" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfAYUW_hMho_o_obQuUlj7ZNofDTd1TRcsTUVKq9OpBRBCrl_l1Z_khYSchwRKzNpbJqfflAh-Wvlk_ki1ydlbwr8wAONuyEJYPZIL9Sc_w3hmkkc8M3J5y_UKeAZXJy1pZR40kNIzM2HZoLtsyH10_lLMlnPTOKj2yO0jHk" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfAS0h8b45itGFk0MaZZ48ZCqkbJpVwrLPgaMvlM9TNPUr900pmH__LycPpkz8kYZ0Ps5lZM8FvOnnP1Fd9fB4sMt6xiq4PajcnaGCrvazFMX23NctJ5-Str7wtXnGeeWqxpylgCJVtpYDQplMKafD75-Pf87Lj5ILl6ohjK" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfCzK4GyHDQLmtGxo6x1GJIFuvx-9PQVYraLuNA6FwBJNKEmPTJs7w8aEXIaUc20ItC42pMV28Df2fQpWUvXYBG1QSf0Xf_n65YckxBmX2sCfgrxM8yh5OmzuhoX3Er9-T3liKc9HFRjfNl-3umxPZKe5361dmOm0yQL28kV" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfBsjhpaUyV0moQiio1gbyHrvbxDb1qW1Rp052PsqIrGVyLqtfLHThGlkgJNX9hw26t45cIq42PPXkgs6os0IikfgGZZBFTlwMWrJSdclFc_xNYX-Tkw3h1e8geHB2k2RvcA7yl2i1wehZh6S-ayfSrnpYGumSqZNZO5-dcw" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfDKlFt7J08dHGqfrcQwbd1DZsPvk_4HBg9BDRA82piubwD5vuV3EryWjcTytnN_EpWiZCe2AASpwSy-ObhQR57yCfqYJztxs30kq2u62muHruUSJL0x8y0d3M82vvOAomR945HFwhuV6mY9OXi__IqGrZ4WoOpQOJHSIdfn" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfAbzFAbhm-48zDvcUYVpnPY5760FWac7OsStAKR2WK9UrV9N8OTLQWH3_IfSZDWAMx-ojKb2HEKWLtTJnkRQuyGm1yJv7F1wyee7yei83D94VfDDP4Pxmkywn3p2hy8-SYHuP-vwQzArX3yQriuExtHF1QFLDjBPPgsmwMC" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfDdCO8_84QdFtS047M56RxpwqSsD8GF2f9FuhDLTErMdKqtP_lt36yBaZ85qTiIbXKBSOsWo5hbLuBgZ8yd45qN4hhxwGz2S64CUTiC1aIj2TVtKSps1mtECCmO9gIrUb33V0KpBCvqco1_Qd6ZNft-8b4_8yvDzlREAzWv" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfDBhC6t5-z-rvyD7g-5Pus-E7H7WLxIbsFus_EV-1167J0Y2EnPUeg7PTU6onVYgUC8zdIm0KHB5GL_xWSpvTWCSrPN21NCEw4d063KwV_w-Ia7xYwLOL09f--kwt5Mw52CNcGLWrRtVELYpt4tTIDBNMr8JbtRhW5AZrjb" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfBG9IZXTLMo42HYAqC6dIljBuci8CpNTrZQq3cNmzGbCr3squ4C3UjvX7ubd68QL9vEZ262b1rC1YuJewVg0AuzTjdPxzdpelVqLlvECcbT4SdXs8VpEE560r6_O7Ko-eRyXqWPY6NoUF5aNT3hz-GndlzrqAImcqEU2ys2" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfDWsmWSSN7QLgGJuB-L2zi9PUSXjGKSe8Eb_FhN38-o5zYZ5TQDIOfR9fEJeYxuv2aHRrQnRfZ6jb1LhhEkdr5WCawqRqEcPYEe3y2Ybp9oUGlHjxxv3HFD0YdJPZD910s4d-1IJXV88kOhBuR5BdH-Sh_6iE2LabgMdEN9" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfANyVeiPDBegI13jUuDTfmG6_gNU84I1jBqbpzOc9XflhKRO2WeDVRfqH61QyXTOrK89rMSEE-65nXOM23L2E3vQ-iayuTSLuyRqnn5196QVDEIRbephm-HjWi3yW6c0P58TCia7vAIHh8CjQerRqT5iR4LiHTbAT1ZzcvG" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfDXbeO2xyJ0z52gHPHteZFdyaapYD51nQHmUZor3f-n7_UGsrkaP5dbq12gv7_jB_KxsfVe24K8Pbz8dGBR0JtEedXR9n6WsK2qRnir9dZ3JEtNzS6yatCjFBhkcqw0Q_wiiYtqtGO0fHDZvCd9Ex-uEe39gvc7JcMZ6A" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfCCHpnPpq2nckIq4HFIW8w-P5mkTklCG1Z_hIiChqEnTRujT3Woql4zqnbaNn4TuoWI5JMAQ2HWWKWOQnPru57CtIQpu95kBlvXqQOrzXIYmzn2UO2q57IF_cdiklXnsL0uUux2PIxV9_ILMzmZk3j0QMx8nlnBHWLfMw" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfCTaSQW2WFQXBG6-bZVl5UO5Y_bXlzYpiyxA_HZqVrEn1lTRVYbOTjDIBW32HS9L3UkGrP3pHNsbjw8KjNs0h9tEsxGavoX0L-fX9zgLdJWh_o8HJbYqRXOb_rXciNYRc_jRBwuK4c6k_C40h03DmFmEqQuFOpphgFeADhl" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfAsx5P6-SpGQXGNIc-j-qxhXxtOy93FkOdxgfAWxCl62imn___OkcFeCGyLNt-ajqt2WSU-j7JAvI5LesuwMVFS_5gXm7y7bPncPszBDEt0O-1o0i1XARyN0zaYvPjJiuY69dspxmyX2PduqZTzVp7nURgaQ0THEaWgFqg6" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfBTT1sXDWwSZOp6YCiWeEGIkyGy2VoEutf7suxSKlJmR15yYL9GY6gB4FJr9JJpdFZbnwj_ceNs_sH52RnzHfO_B3KBHbz3Mjs9q9iBk0nG165hBqTRjM0NOaQlijDHmwzixZkATGejUkEicH3I7L-JEfcDXKXtO9DJ1i-6" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfCoz1f0zoOv8EgeCd60FL9xn2og2O7TAzJv2NMPeVGoi9ELz2j_4GuPjUQFASmHbmDsEofJ3WJtzo_t4cMOOqAKE2l-G2KdFoBdqyAd5ZhWCW2eqvLBZYzTzF39CAq1LuJ-KBU0aBbuzjs8cUU4Lx4LPWnaedqtunar-uBN" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfCN_UoDnh95NLTkqEKBeLmIaBf8tP2DhhV4OJNbR5SYeUrPAPSQVObH_q-KXWd_yR6GhSTH9D93lFW4q_4DtWKrp293ErVv82FZzxCTltN2Ys4qoh3n-2_IA-crji2dSgiqXuiWFgGvwqcGfTilKbQeDCZM7kDr0_LlMuA8" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfCTJPK1LVKi-2EtOWZAae3BlLHJJ9iY6hqqK5CLwRrvo5O177SqAYT7frYbsFUcckqzEC4-Ljjb67YmH_ZdASYSpra7emIwd65-oaLmluetgcmEXNN8aZeEKITtbgPzQNi2fQr0f3b8ysbeypcsv6OgjFvR9UusAApDuUXc" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfDtm56AAHr681E53ipmSTzEGsvnMnRbu884PiYhtwExvSUXngX2mdZE7VmwcaMlnQOPnt3oBDdjvUz3gtyqIuEaT3KePpWhykyd1GnGafSuicCcRdO__5rC1X6_6RBvWyd2k2u48Ua8qmqDX2M3esqYCnQnEdxabCd5q1Vn" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfBLS54Hk41FvFw5drBrvcbawnaw_bacxvH3Me1rQno3W2TpFdQh1VnG-DumHA1FV4z7FUNKMAqEIF6OWh_X3mE8SvoOXseG1VrtV_Qp7AftVBF0riAaMKCoZk2yk5zqxlD6IsmT0N4M3B2Avu319j4jaWhRSESuJ3oHOg" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfBmNhfFL9yWByuVM8vJkWLItQ0TqKZIUd1UwDAGjpijZ95QVCRx5Jios2oaUEZ1viRyGdmmIACHUZYmA1xIh9ELD9dX8KSIK8XjVPWeQ0ORUkLWehbz4mQArv3ahrOXdNE5XxqYE9OfYNPPDVIBdc2tLLLtxXAUpNS8jd99" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfCzfkq4sGrPID-dHKl7hiwO5-2B05hhzDm007OOK0Ug_N7KDGa-4M7zVi8F6fFwxRCsR8C3NiK-vZn_lh6bDrXWRudDJiQUiaTqJAUPgfwTwzH4ajUzLLwY2jtJh_OM8wIBtCXiDBoMW7vuYVl9x7fqpZ0Gvw5sopDa5g" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfDYvXu0BpNq18UrIFsDX6sCVedBbEZC4U0MAgEuaCkwRFw2S_0saYNl4kVHMWfFxIQEmgr02mrdxZgfxV_uRoOODchGsYxoNbnXhP5G7s5TWDIrAyK2aGZEHJZfokp1crVvWbwwnQhdhpm2J2QporN3ZRYUP6fqtU-dgRgf" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfCV8vk38iQeOCHhl-jg0D5nz6Rir79Ca680JlkSkmWEIusqcHWAMB3M5L6YEAynYWyjFP6OJbD-r6mlVrkjdVfpdHtIBBIKjObDjzfOoiMRRN3VD4cSEq8v514KbrSESdNCmYPaIMz3vz9kd1Pxbz_ClcqPQ2Y72rSUBjuY" />
+            </div>
+            <div class="swiper-slide">
+                <img src="https://lh7-rt.googleusercontent.com/docsd/ANYlcfAaq2HS4LG_M6WEe1Sj61jLSdZ4RIiPF6_NshTMuJJxsGeETDyPx5dUba6rgpfaRDfQ1-0qXvTI_PKBlyluihflSZfh6GGzopRyiCtmNXqvruLebzti42ttpwI9zHa3kpRfv0RMT5GnqLuN8axBJzeXH94cUaAcdSnY0sxh" />
+            </div></div>
+    </div>
+
+    <div class="watermark">Made by 阿剛老師</div>
+
+    <div id="myModal" class="modal">
+        <span class="close" id="modalClose">&times;</span>
+        <img class="modal-content" id="img01">
+    </div>
+
+<script>
+    let mainSwiper;
+    let thumbsSwiper;
+    const imageUrls = ['https://lh7-rt.googleusercontent.com/docsd/ANYlcfBBJsOIeq20KnDyVfJ12LqoqTGrGqmjYZU_E2DRPEGVxLQNsPNQFww-ABCUTJag2-UzlmiVXffd52qdI8bh6XS_N35ZyD_HWqa6jVz0NSpkZZzK1ni-nxc6jNcF7wC3sv3MQ0L-6P2mFZp10waaUnDTElP-rWj_VULSiw','https://lh7-rt.googleusercontent.com/docsd/ANYlcfCFcButJ9g9RvinX1ZWco1wvblBieFm4DYOf6wNiYIp652OZ_kbv2CQmEK69mVbDhShQuaiLwnoGBbbN7eMViOyDYUFH2g7hn2dj265LSOx58oVT_mxPE8mOBkUu7-XibEma_-2j9whObhDwBzRJmMjeueXwiJKQtt4Wtez','https://lh7-rt.googleusercontent.com/docsd/ANYlcfCd10LEXz1opvNL8glr3jqybawOuvtR83IdZ1LhsahV1p6UXUFMEJoZnI1wiZoRzY0QqJB2ZEJRTsW1jA4EoiVObnRMqhEdX03ihtdvLzFLWp8nhhTGZmrTHPYZBNbujtpTYUUvdeXqu4y5Gb_PQUE6RGlEazwbuL0PmUJC','https://lh7-rt.googleusercontent.com/docsd/ANYlcfBIs0xLrdHAOrtzpS-xf-6HlVyfNcEXoEZY_fi7Zhn8a9fEETb904Hnop8N_pCY4ZtgqfNUJjRKJ-GJDDJPU0QJYsAC6ljWXDkI-96E3iHrc42OsTBaa9OKoAkQcq3AUS3HOPqC34P_zq8o0jWwfJDxu0OsVncN-hyWMA','https://lh7-rt.googleusercontent.com/docsd/ANYlcfBWaylAQueXq89I0-B_7ggRluKNME_OBqSKNmhYbbzJ3ubwp9dF8L4F38ilcA-NshhGC6nkmKnyyfzytVkCLutu440fQ3cC2EkhTT68q2qiHRcWXrUyO_QOiiXaHuuYvdOVJEXlLyUiawTwOtbm5LrSnYLjDoMmToYgQDz4','https://lh7-rt.googleusercontent.com/docsd/ANYlcfCgqqqJm0fuTZ6d-LdebQ2qGUUckmnjCd9ZJ3ReYx0DYFL8qlmyWc0VFTA8SqzS82vB8e-Wfh1R-mtPRihI0Dbm56vYXq-9ORMgWY6Sf_L9dbB2JcUOuWGiZLEfbeezuYQVBIIVbc1arBJVIcctKYhfuu34mnIG6Eoxcg','https://lh7-rt.googleusercontent.com/docsd/ANYlcfBEbBft1RpoicX2n2kNyT1x0xUgVpFdshL3A17uK_Mpnem2C6N2I4NuyKUxHUcsDiVRqt51mjs18vv3xhWRkR-eTTqOS_r4VNuXQkQJ7waecsGqo9Z8o6enJ1i40OKnD-WEoPJywvkW6FPZrPw7aDXduPISTpPY7hep470f','https://lh7-rt.googleusercontent.com/docsd/ANYlcfAJp6P1l1WpQg0wnbNu0mojGTgygmFWMJ0FLYAZ-tvrCdNezDUn8iGoooHdLQ6EZe3vikyb5sfUglgg_lHzCCRPiRiSGp7-aY-hwPaT5hhHoUCAPQtZdaO5Vae2ttTwE8acQn2CtH2G5jfr7-9WLhh3kX8-LfqFuzeoLQ','https://lh7-rt.googleusercontent.com/docsd/ANYlcfBZK0JLeqv0L0Vsc3_rGzTRAUjD1gvZrBSTc12iciBTt6YVTekb7JLGU2aeLXPZLCsbytvAkPZFjpd2WOCFEbBukTIIctmTerdz74yhxEmzYy7ZLeSl7cky8JJ79ehnEtcmOUw_1XguMflyz4wBPKo_-ptWUoUi52_cFw','https://lh7-rt.googleusercontent.com/docsd/ANYlcfDO21sXq1Zn8Tgh7bqZC_d30KzDE6KdBbKLkfY6WJ-c_l7mGJjQADc8DN8Hy8UzUn2ypmrhdIHX2c9aEdpDYdztUErGoY1IB9dy2jCaDv0Y5m7ugJWu5grQjX6eM8zc0mlP7csyQAFv8FsnGBBs1Tncvbcq2VY_3PLt2Nwp','https://lh7-rt.googleusercontent.com/docsd/ANYlcfAhleA8mmieBtibYBWluPOESVftdA0P94ec-Q38G9upg7_ORkYHEAbfKbQFXbDA711hb3n5P97DC3jKQ7NhaMqE3ni6h-BIMtgv0QI7CRsJZedEKnjfuHk1mdSn_xNTwumU2-G8Bp-0h8qLIXVyWzJXtSAXeElgEjYcow','https://lh7-rt.googleusercontent.com/docsd/ANYlcfC-EbkdFn0WAPICBf4esyHjbP431gP8dm3uHzD7poqh4u4ZgW1x3nJy3ftMs2afsglKy1WwduIASWAfIQjnWCD2t4vIapVmNCpVOrY5jmMDNpFXd4vrB2L-I93yJ8T90qCM90wxidMIQWsQPVg8P-KYW5zI0bghR6zvxc77','https://lh7-rt.googleusercontent.com/docsd/ANYlcfDU4S-pA7zhW2sP10ULvjc9BiIDoztzNp0fJGDsOe8L6p9Cwi2FWOAB7NjZxeIGLhOoww-McGm3gdOpApcQM9m_FO76cAMlKdXS_uswFCHkhIGDL-1c6YboR-89gZd3EJ6XbJ1tHwH_kx00O_e7qJQZ3kxPHoTcKECWMw','https://lh7-rt.googleusercontent.com/docsd/ANYlcfCTZ5agDx9FoX1HHFN2DSJFqJQp_Ao-ytG2RROA7Gq2dwR20UMUfk7US8fJkHTLJ8Fju3m78JoAA-AKNBhnBXIPiLkdRQKidDkhXTKAupXp2tzG7xcS4Y5zLs-NNPvzIxvgNtHdjBIxmETLx7-kybsy8z1CHxFtWoVvdg','https://lh7-rt.googleusercontent.com/docsd/ANYlcfDvVWzrAaOXqozNzfG8H4Hf8eU48ixTByDsFz5JIqnjFAgnHc0pPqT7EOZNEYNEdMIVZvp67_ZQS9mA0Xvakdvwc13z79JXe64Si9NkoD7YVS8260R6p8s5myksWciBTwBCDR_EKzbmCyJf9r2ks21hKT61vDXDBfC-ZIAr','https://lh7-rt.googleusercontent.com/docsd/ANYlcfB6iiPqxmSae7m3q63C495aqMHu5bdM6fTL9O1KtDxMHah8KI7Z5llC2deuFUeVXxpK8Tj291fG2iJJKtajao-Jfdbp7bl37SuvXagenuUS5iZ9035npJQlC9fee7J1laOLA0H0aAsTZocBC7WSIi3cdINocR9a_I5wHK22','https://lh7-rt.googleusercontent.com/docsd/ANYlcfCwseE8yzfmRGX3J0NZ0a6Sq46o26bhbG0Pc9YbD629sABd-6cJ9k3UsGVVlfArcMrGmGlS_j5I7TG_tEbQHi_YnV8PE6bpMetAUzhWSm3YZUhOuYcDyqZk8r-iDsyXaCPrs2E_H8zJlLsRUDYnSIK2CPufFphiugo6Pig_','https://lh7-rt.googleusercontent.com/docsd/ANYlcfCjcgpZYMwGEdZNIzH0idpkCYx0qMaUrdgPDzVL-bnPb0-z4QRiSJqzIszgs239rALTd-rgFI78z98BRlS7fWY1i1GRBargpXECxHZYmNFnIODswlXcuO9G0JXZleSjE1pvWrB_DjnwXpt4cZpYOY8UfO9LBqOU_7HRCg','https://lh7-rt.googleusercontent.com/docsd/ANYlcfCGEITUCax6fwEmpyX8H-qnjq29NVgpTtn8nF1C1xoxFY09o2I6RJpIcTvfmo-zec4n5BH4NuC5QUqCSWxSozj6OMjL0OlVWxdaKmxg_Hwj0RcMGDuocbDvXmcxujyNgvJP-5MzWg-28GySunZwjCGUxOrzQ6j62B7XW5UM','https://lh7-rt.googleusercontent.com/docsd/ANYlcfDdwtkH4ybGlcTAW0ol7QRI1ueeCFMoaOCQ2ZwrCoQyYybrCLpAca3hDTcw7bcxR3UYnxWzL40bRYxCubDrIGSmOSBcIKXDSaUpdhgWBmHTOvqnCcRTN_ybKNRBiv8UK6e8BBOUEW5KyCBVA9UXmWKjRLMszgGOwBro1g','https://lh7-rt.googleusercontent.com/docsd/ANYlcfDMQupL1W5LKuCIzLkQ3X0wn7nPfGgMsVBdeTE0_xnFPkV74ABDXtQzhaR00ImGmOo23B0VpdSwe_xYTSXmnZVLaaZgXA29FU6TU2_aferzppwzb3a8zzWDkzUmaMGDJPY7FihXgFs5Z5Yjvxzq69AUT_ZmIGU46T3wGQ','https://lh7-rt.googleusercontent.com/docsd/ANYlcfA-xKxEPUrq-h_jOWCTkB8l3tQDIGKj1jwiLLV6CSMXLaZv7DsPg9qTJwLN9vdT87LthfPwY7tzM-xpCjSKtIBY5qiX1xPeMO1Tnihd6NBXHbjZh9WbxiTLmvtwVKsTQfA18oW664hsTyOhvi3Pk37g0HXgzsdpKu4-CM06','https://lh7-rt.googleusercontent.com/docsd/ANYlcfDSxH2ogpfXayJO-fY-1YpvW4y-D9M7kS4_YtGGORpMc9nGLD_BZi2c6X-KAjSwYn-uMlZYkCtLBQ6RYDBqyC1g58k5CfG3jjQQaHMl8_FKX82H2ckrxpXfi3Qu1nsOBBa_x54p0QdtHe62BQtHM_mJRrLT_E0THN9ct4uw','https://lh7-rt.googleusercontent.com/docsd/ANYlcfBIEnoay0WmDygpJamTF6A_ejVtrqnKLZzMzNf7VTli4UamZjzpOtawZ04lYc53NcgdntNBzLELHTGSgYrtaG1WUQNE0Mnnwqh7cgebLjPzm8y6X-xp8MZFXXn9c7cTQSra6PB0tI5C0DXKflYkrwLL19fWZi-7Q-PlvUen','https://lh7-rt.googleusercontent.com/docsd/ANYlcfDaeDHWXxjvVpBlYENDqgbrI85ALppmIZz5p0jRvOjaTqrB5Yv5zlbL6wV3y2qysaYBcOVa2Vq8GZJgCzNT8hRASEDMoRZw1qLDwVBUKM0op-TMCCKFGZORyQJCPBLv8RtaevV_u-j42dXusM4paGIbPOPJACaWQnnc7A7A','https://lh7-rt.googleusercontent.com/docsd/ANYlcfDqGArk8hjCGZNOFubHmuAKmv5r3q734BFOq8IGC-rHL2TPIeZvjQZxzlkntVw3htqavPRzbuimlUw_tyhPNiNdyoToojJXv1QVhIEhfedAYLM6KIa2c-mAR0bGRI_2fu92fAkegrC4y6SL1rC2d6Io3j-yp9ucsCum2oyw','https://lh7-rt.googleusercontent.com/docsd/ANYlcfBllvyKQnGS1Exv4KWcAIhMk4B1Y7FkGyHOkSXVlBXPvQE_HdQXRDjNCXrm4_IRujB6NAWDn8E4D7ICRPv4mSSvT0ybjYLVqSUSn0hST8VmkCZhwKqBkIlEpWkBny0IHUdjOnxCS87rbAejwoADuojwvHEBe6fb-OKytQUL','https://lh7-rt.googleusercontent.com/docsd/ANYlcfB1TBrbu-F7vWIN6xtVxqdK_megmtcGJ2u_oNuT4dizVZoJ_bsCyb9OvnTuMFQH7y5gN25vOLyh9bPwOH9yIAeoDXK-_XLJ_KqUr-PHrGxBj2i_ZKyGqHI1GOnk9FAGAq8rp6mHg_5I-PRff3COK8s5A9oh984rit-DdQ','https://lh7-rt.googleusercontent.com/docsd/ANYlcfCKgJ58W3S88bWHHmdIWdaarOJoiWeiMdeJLA6_aL0_FAOu-TyMaZmRrt53Kux5658NhzGk8mjueRte-9WKeE9OiTXvE91gHVo27PuUwMRNUl1Z_baJC1gtOnBWQzPynEDxuNC0VwkIY37J67mCoiqDzzGjONLOzBcjefif','https://lh7-rt.googleusercontent.com/docsd/ANYlcfDldWMvAlRgW9yn-K7y7WWI3l-UCxnlZouARyKHfwPugwi4hUSAZ8SIx2uzCXoYNAVgYkDGkhp-icRO2nqdemKtEbHTx1jaRXcwkuUkDMMD-LHrUSQAtTEX3uk_Kwys9m9CMapddi6pdBMhVtaC7VPJSjTCSuwRFHYon5_N','https://lh7-rt.googleusercontent.com/docsd/ANYlcfDLsTSJ8CBq97XAIwTOknIrdMl0lIE7vNZZDU4dTDEYOb1_iX_IG_G_2Y1YrB2YCmsdnSwsCrmEU90Tz28gaC2WhZe9Ic6ZH3b_UQUv8rhvjtCrohnfBKytTSWqh4-3LNZv6AFI00988umPoW2H-kmxMxJBJCrXG-yv0QNV','https://lh7-rt.googleusercontent.com/docsd/ANYlcfAQe5kTSyAPdexXDfBRai6ndGPGHH3NusiRjVkj5M8vUd_dpeMd15br37dc6Cduv-yvqxs4nYip8YHqCy4BJONpUpeEEUrmEeUI85p0ld5nlAZ6N1LkpE9_xQHdC6VMEP1L9eVXBmjWss1kT4NyOGc6YkIUKP0Mu_yCnnBC','https://lh7-rt.googleusercontent.com/docsd/ANYlcfAiG2XDJnYxzT85i3ar5rQXdzMDe0YzoTEfzDRO-SNBwNTMsFNbZ4dxEWi2GAbiMEbFlduRaOnXz8a_DpD3RLVO0m4qM8AYnFaJnUQXyA6Fxoe6IiwWJM4guk5I46m3gSVBe62rDmYGV9nl8VRVza_IK4lTWiEc1Kr_Mg','https://lh7-rt.googleusercontent.com/docsd/ANYlcfD2F3iovxp9E9_DrvKuYh_0J6jZc3Ee5ZfDOI7N0jsgUspYu3TUam2V0MUdTJCsnYA8Mbhu-kdvWtNdwbNDQgUUbUSuByRK-tdFLXHtO8uOlEWL0jK9aMROU-TNlClsfTPePXy27mncML-Wyv5UtJ5pGyGPnvs3USVEkw','https://lh7-rt.googleusercontent.com/docsd/ANYlcfA1qGepXK28wLKCw8E8KB1Ib0mPIROnulfaGauUhXEBHT0jZxrrUCaC0oHnnhAZCkItZM0DnopCzPeX0f20DKPvgjZaQjqRv7sbvMaYJ_badrtTtqjC1ZVLOyXc-nfcmumG91sD7E1dnbJhD0WJ4CWzZ-zD4CbZsbH7Zw','https://lh7-rt.googleusercontent.com/docsd/ANYlcfAo3_c9LEGctjW48eVLxzAKOSxRtsIoVh8RjZ-fyOawpB0nM-TrqpUHM7jbzDTCYb0Njx7iarw-bS9TaCDQ1McWWilfTcZxB2atg9j7CGP3NUN248l7tyD9XvqLiOTRBzxqYQIJI6Q2VkjsKYptO2I44Njea-ujjNX4gy8P','https://lh7-rt.googleusercontent.com/docsd/ANYlcfADAWzt_HnfapejaI7Y6yjsbH08ubjfw_5gNiB1F-XbblBLDBlTYye5jPiqugtE-T1oCKQBWAXGiqCIYgIopEcA_7IDJnH8TVjO-Gan5ig7KXlDPx_N3E6Sy2mlsL6sTQnnyXe_YEoxsTTfKfSIMiaJb3ekhMSfYmdz1phe','https://lh7-rt.googleusercontent.com/docsd/ANYlcfBR3lrcwfItxDf4MtOurm-rqPEhnQVe1botGug990FcH0bM9Zq5h7z_leTrsQTQO5Rh_8Vq5NwJAYINkTCm7uaUGkk9B6XH29ipNbOhuDuecaSf_ps_op6fK07Ijseivxom6EuRhs4WlHWnHgJnS7bYr8Dh1uP2ea3jnRTc','https://lh7-rt.googleusercontent.com/docsd/ANYlcfCbSweDk7GFahxY-sr5yFmqDYqnXQQ9mF9OtqMwjnh4oHhKWJOEoLVNLXR0EywkZFG8bLsZK-1i3xrcJr8mk5NeFxOAvogHuR_Eq9XpH_vYPwS2VguQIuT4vCiKFXS-V5uVlW2BDoKxCuiYd2_lgc91pZio-MFYHgF3irx_','https://lh7-rt.googleusercontent.com/docsd/ANYlcfBBDII-akOVSar-g1RO_iI3eK_Igc58B5s9oCEeL-tWK3GwFgl6h_7Q05fI-obE1tQn4EUiM7jJPKHcF31daju28ufAIph1CAELHLM96kmpoEw3ThC-d2h7S2CkjeaiJHKa6BkbJcDJcmFBi6vKJYAUfjKVvD6Phk9bRk0u','https://lh7-rt.googleusercontent.com/docsd/ANYlcfA7n9silLu-iy4W-QKkveku8NlyeRaS-2LdjL8bvbTR1R0MJeVc9SlSPOh7URuxCSOzNgWzkt31HHJkVY7nXKXzUoBNxmqd0Xw355CDxMfMQcxhT4FfBkFez5LA95yZuNUZSqvBZrL7dBAEyarJz9jdYfPYs2xpxPzvdIuH','https://lh7-rt.googleusercontent.com/docsd/ANYlcfBpNeJnUtUtNLODLLT_u3qANmDv5q3cjj4XAWkv8bfiRJWPeTVaWkFv2MySb0ZgoqAFcudy8AcLZV_w7deA7FEfOE4iOdWM0MYgw871YH6Uv_9WdXVfDdpw8IA9JoLI2Y6esZV2-xErXRMTfTBFEqSKw1wRubE4nQMZg2VU','https://lh7-rt.googleusercontent.com/docsd/ANYlcfBI6CPubUgjLlzYaw4Py_xqmNgnPWnt_zQj4IIR3kCa8wTYJb1zU8zNpI8d2dzI0YqisyHojhuF0h7kOSX5jYPAK-h40M27Nl_ArWvZbp5MZko5momcODk37XYQH5ylGshZ-yiatIceFlisKhhI3BGLWF8lO7c57_TuC5Ea','https://lh7-rt.googleusercontent.com/docsd/ANYlcfCIsYbl9zF4WxjUXAGkoa7B_kDfFMxhHZ-pJOf1uTp2vudT51wFostQcih0v2JvnXf39_tbFPMF1IP-_bk773Afko3XYvMyzegQvzn6r7wUnZgcH2atgc7v2xVqEdN6e8wJznjeBnXvRv6tea1qaPftHUUwN1X6I837JsYO','https://lh7-rt.googleusercontent.com/docsd/ANYlcfBiXTovuR6KwZezKyoxUDDKFKLmZ-2KlDK_OJCXqn7yXl9MMVQrlALvgpzQ-2O8jVJzNgP9ng_t4Jd5EFuA7mz2iZbt61mIvEaIRjYwnRuYT_TMn8IXvlfmd6e04T0i1ovZ3vYC_el_L9aoQ0qjK6hkC4HbpiIw4HuryQ','https://lh7-rt.googleusercontent.com/docsd/ANYlcfDVluUz-DJHA3q6TboQ4M9rOGU9gGXt1tUOIAPeEyO6mFVaMztPHFztA43E9pftPKL39DLzgiDYmKXyYIp0DwZD6yv3IH1EK1gHvgrGaqP1ramI-vDHBX-CIjjV69KRIzwAL98HM4_zgnjHxW3L7X79W8A-wVGY3Veu7A','https://lh7-rt.googleusercontent.com/docsd/ANYlcfAGmnAejIkZSIRSHfrFtdt4gQNTREZf8ngvbGcYrrWj2AdnWO6AbIjGFl7yH-McrheRI91w0V9COnSgYiXVMsaOx70-PhpF7hoLrVgr6Vw0SZqRonOd2bLgwa1vxxoorjMek-UMEs9C9Avyel6Hae21FZeCFszzrTKE6GXE','https://lh7-rt.googleusercontent.com/docsd/ANYlcfAk_hA7ri5Rc1hRsACLhE43QYHZy6R0OkoAWq3rhbz-knyGL7DDN2FAnQl4Djo31yurmnuOkhO0tOZaolDy_YAgxjqaskgVBLqZSsW5lt57JIMde4NE__absseX9GpJuwJ8SU9PwFGsIGbcuJJYGhIWRs0r13nvjkPjeSuF','https://lh7-rt.googleusercontent.com/docsd/ANYlcfCJXKd9woGHmHZK1BQVvjnlF6H_DxzbZ4yEB8UEEVx-NXpPaSHdVjjxiU9eaLIxedPEUdYR-8bfGsfMqdaCad5YIxpQYVBKv7eMtmQZu3kAVK0hylH2wcnTWNiLtBSgQtSjFAjTTbw95qTcV5OSGkRExL0A4y1UMkuQds8o','https://lh7-rt.googleusercontent.com/docsd/ANYlcfAG2mOkdBx0HUfkqUhkL0oXpQy3mRYt72-FvkczK8ExrZh_Pn_OfapjbFEUt3o7CaysMXb8e5AvKSsOkCfW8bDm9eSEu2xjDvjLeAZlAq-qtwT_LBSGzKTnFBnVMQmMJfobJWb9vOdq0ATvcUFYem4VHEBY4BC7Dblz0d9F','https://lh7-rt.googleusercontent.com/docsd/ANYlcfDpe6J2NAkqVa4ZPP5_IHQbZsziC903TSBoVhh4clQqpJufZC4BylqhIc_fBbIRR2etmo5z8sjy0Kwrgp3q3Ebm9iCOdZj6RcnsJGABX5KAFv1uQ3x9H7l_sN_irJVomWEviDaKyPZuhbWP_l7jUPenTUtNsFvKaOB04vEj','https://lh7-rt.googleusercontent.com/docsd/ANYlcfAp-9h0BKx9AvJYXxAEV6nS4SCwJ7cGznr7XtHVLHoFHJwPYDSU-xsvrAEO73bwEjlTWWNjYdeR5eILLMzXkmYBMaNJUXI_mgVFRt41ufQBacFDhONS4Lg4oMs90HBsAp11IzyYRfX2jrreC4FZCytC-m9bLiSbxEiWDrdS','https://lh7-rt.googleusercontent.com/docsd/ANYlcfAYUW_hMho_o_obQuUlj7ZNofDTd1TRcsTUVKq9OpBRBCrl_l1Z_khYSchwRKzNpbJqfflAh-Wvlk_ki1ydlbwr8wAONuyEJYPZIL9Sc_w3hmkkc8M3J5y_UKeAZXJy1pZR40kNIzM2HZoLtsyH10_lLMlnPTOKj2yO0jHk','https://lh7-rt.googleusercontent.com/docsd/ANYlcfAS0h8b45itGFk0MaZZ48ZCqkbJpVwrLPgaMvlM9TNPUr900pmH__LycPpkz8kYZ0Ps5lZM8FvOnnP1Fd9fB4sMt6xiq4PajcnaGCrvazFMX23NctJ5-Str7wtXnGeeWqxpylgCJVtpYDQplMKafD75-Pf87Lj5ILl6ohjK','https://lh7-rt.googleusercontent.com/docsd/ANYlcfCzK4GyHDQLmtGxo6x1GJIFuvx-9PQVYraLuNA6FwBJNKEmPTJs7w8aEXIaUc20ItC42pMV28Df2fQpWUvXYBG1QSf0Xf_n65YckxBmX2sCfgrxM8yh5OmzuhoX3Er9-T3liKc9HFRjfNl-3umxPZKe5361dmOm0yQL28kV','https://lh7-rt.googleusercontent.com/docsd/ANYlcfBsjhpaUyV0moQiio1gbyHrvbxDb1qW1Rp052PsqIrGVyLqtfLHThGlkgJNX9hw26t45cIq42PPXkgs6os0IikfgGZZBFTlwMWrJSdclFc_xNYX-Tkw3h1e8geHB2k2RvcA7yl2i1wehZh6S-ayfSrnpYGumSqZNZO5-dcw','https://lh7-rt.googleusercontent.com/docsd/ANYlcfDKlFt7J08dHGqfrcQwbd1DZsPvk_4HBg9BDRA82piubwD5vuV3EryWjcTytnN_EpWiZCe2AASpwSy-ObhQR57yCfqYJztxs30kq2u62muHruUSJL0x8y0d3M82vvOAomR945HFwhuV6mY9OXi__IqGrZ4WoOpQOJHSIdfn','https://lh7-rt.googleusercontent.com/docsd/ANYlcfAbzFAbhm-48zDvcUYVpnPY5760FWac7OsStAKR2WK9UrV9N8OTLQWH3_IfSZDWAMx-ojKb2HEKWLtTJnkRQuyGm1yJv7F1wyee7yei83D94VfDDP4Pxmkywn3p2hy8-SYHuP-vwQzArX3yQriuExtHF1QFLDjBPPgsmwMC','https://lh7-rt.googleusercontent.com/docsd/ANYlcfDdCO8_84QdFtS047M56RxpwqSsD8GF2f9FuhDLTErMdKqtP_lt36yBaZ85qTiIbXKBSOsWo5hbLuBgZ8yd45qN4hhxwGz2S64CUTiC1aIj2TVtKSps1mtECCmO9gIrUb33V0KpBCvqco1_Qd6ZNft-8b4_8yvDzlREAzWv','https://lh7-rt.googleusercontent.com/docsd/ANYlcfDBhC6t5-z-rvyD7g-5Pus-E7H7WLxIbsFus_EV-1167J0Y2EnPUeg7PTU6onVYgUC8zdIm0KHB5GL_xWSpvTWCSrPN21NCEw4d063KwV_w-Ia7xYwLOL09f--kwt5Mw52CNcGLWrRtVELYpt4tTIDBNMr8JbtRhW5AZrjb','https://lh7-rt.googleusercontent.com/docsd/ANYlcfBG9IZXTLMo42HYAqC6dIljBuci8CpNTrZQq3cNmzGbCr3squ4C3UjvX7ubd68QL9vEZ262b1rC1YuJewVg0AuzTjdPxzdpelVqLlvECcbT4SdXs8VpEE560r6_O7Ko-eRyXqWPY6NoUF5aNT3hz-GndlzrqAImcqEU2ys2','https://lh7-rt.googleusercontent.com/docsd/ANYlcfDWsmWSSN7QLgGJuB-L2zi9PUSXjGKSe8Eb_FhN38-o5zYZ5TQDIOfR9fEJeYxuv2aHRrQnRfZ6jb1LhhEkdr5WCawqRqEcPYEe3y2Ybp9oUGlHjxxv3HFD0YdJPZD910s4d-1IJXV88kOhBuR5BdH-Sh_6iE2LabgMdEN9','https://lh7-rt.googleusercontent.com/docsd/ANYlcfANyVeiPDBegI13jUuDTfmG6_gNU84I1jBqbpzOc9XflhKRO2WeDVRfqH61QyXTOrK89rMSEE-65nXOM23L2E3vQ-iayuTSLuyRqnn5196QVDEIRbephm-HjWi3yW6c0P58TCia7vAIHh8CjQerRqT5iR4LiHTbAT1ZzcvG','https://lh7-rt.googleusercontent.com/docsd/ANYlcfDXbeO2xyJ0z52gHPHteZFdyaapYD51nQHmUZor3f-n7_UGsrkaP5dbq12gv7_jB_KxsfVe24K8Pbz8dGBR0JtEedXR9n6WsK2qRnir9dZ3JEtNzS6yatCjFBhkcqw0Q_wiiYtqtGO0fHDZvCd9Ex-uEe39gvc7JcMZ6A','https://lh7-rt.googleusercontent.com/docsd/ANYlcfCCHpnPpq2nckIq4HFIW8w-P5mkTklCG1Z_hIiChqEnTRujT3Woql4zqnbaNn4TuoWI5JMAQ2HWWKWOQnPru57CtIQpu95kBlvXqQOrzXIYmzn2UO2q57IF_cdiklXnsL0uUux2PIxV9_ILMzmZk3j0QMx8nlnBHWLfMw','https://lh7-rt.googleusercontent.com/docsd/ANYlcfCTaSQW2WFQXBG6-bZVl5UO5Y_bXlzYpiyxA_HZqVrEn1lTRVYbOTjDIBW32HS9L3UkGrP3pHNsbjw8KjNs0h9tEsxGavoX0L-fX9zgLdJWh_o8HJbYqRXOb_rXciNYRc_jRBwuK4c6k_C40h03DmFmEqQuFOpphgFeADhl','https://lh7-rt.googleusercontent.com/docsd/ANYlcfAsx5P6-SpGQXGNIc-j-qxhXxtOy93FkOdxgfAWxCl62imn___OkcFeCGyLNt-ajqt2WSU-j7JAvI5LesuwMVFS_5gXm7y7bPncPszBDEt0O-1o0i1XARyN0zaYvPjJiuY69dspxmyX2PduqZTzVp7nURgaQ0THEaWgFqg6','https://lh7-rt.googleusercontent.com/docsd/ANYlcfBTT1sXDWwSZOp6YCiWeEGIkyGy2VoEutf7suxSKlJmR15yYL9GY6gB4FJr9JJpdFZbnwj_ceNs_sH52RnzHfO_B3KBHbz3Mjs9q9iBk0nG165hBqTRjM0NOaQlijDHmwzixZkATGejUkEicH3I7L-JEfcDXKXtO9DJ1i-6','https://lh7-rt.googleusercontent.com/docsd/ANYlcfCoz1f0zoOv8EgeCd60FL9xn2og2O7TAzJv2NMPeVGoi9ELz2j_4GuPjUQFASmHbmDsEofJ3WJtzo_t4cMOOqAKE2l-G2KdFoBdqyAd5ZhWCW2eqvLBZYzTzF39CAq1LuJ-KBU0aBbuzjs8cUU4Lx4LPWnaedqtunar-uBN','https://lh7-rt.googleusercontent.com/docsd/ANYlcfCN_UoDnh95NLTkqEKBeLmIaBf8tP2DhhV4OJNbR5SYeUrPAPSQVObH_q-KXWd_yR6GhSTH9D93lFW4q_4DtWKrp293ErVv82FZzxCTltN2Ys4qoh3n-2_IA-crji2dSgiqXuiWFgGvwqcGfTilKbQeDCZM7kDr0_LlMuA8','https://lh7-rt.googleusercontent.com/docsd/ANYlcfCTJPK1LVKi-2EtOWZAae3BlLHJJ9iY6hqqK5CLwRrvo5O177SqAYT7frYbsFUcckqzEC4-Ljjb67YmH_ZdASYSpra7emIwd65-oaLmluetgcmEXNN8aZeEKITtbgPzQNi2fQr0f3b8ysbeypcsv6OgjFvR9UusAApDuUXc','https://lh7-rt.googleusercontent.com/docsd/ANYlcfDtm56AAHr681E53ipmSTzEGsvnMnRbu884PiYhtwExvSUXngX2mdZE7VmwcaMlnQOPnt3oBDdjvUz3gtyqIuEaT3KePpWhykyd1GnGafSuicCcRdO__5rC1X6_6RBvWyd2k2u48Ua8qmqDX2M3esqYCnQnEdxabCd5q1Vn','https://lh7-rt.googleusercontent.com/docsd/ANYlcfBLS54Hk41FvFw5drBrvcbawnaw_bacxvH3Me1rQno3W2TpFdQh1VnG-DumHA1FV4z7FUNKMAqEIF6OWh_X3mE8SvoOXseG1VrtV_Qp7AftVBF0riAaMKCoZk2yk5zqxlD6IsmT0N4M3B2Avu319j4jaWhRSESuJ3oHOg','https://lh7-rt.googleusercontent.com/docsd/ANYlcfBmNhfFL9yWByuVM8vJkWLItQ0TqKZIUd1UwDAGjpijZ95QVCRx5Jios2oaUEZ1viRyGdmmIACHUZYmA1xIh9ELD9dX8KSIK8XjVPWeQ0ORUkLWehbz4mQArv3ahrOXdNE5XxqYE9OfYNPPDVIBdc2tLLLtxXAUpNS8jd99','https://lh7-rt.googleusercontent.com/docsd/ANYlcfCzfkq4sGrPID-dHKl7hiwO5-2B05hhzDm007OOK0Ug_N7KDGa-4M7zVi8F6fFwxRCsR8C3NiK-vZn_lh6bDrXWRudDJiQUiaTqJAUPgfwTwzH4ajUzLLwY2jtJh_OM8wIBtCXiDBoMW7vuYVl9x7fqpZ0Gvw5sopDa5g','https://lh7-rt.googleusercontent.com/docsd/ANYlcfDYvXu0BpNq18UrIFsDX6sCVedBbEZC4U0MAgEuaCkwRFw2S_0saYNl4kVHMWfFxIQEmgr02mrdxZgfxV_uRoOODchGsYxoNbnXhP5G7s5TWDIrAyK2aGZEHJZfokp1crVvWbwwnQhdhpm2J2QporN3ZRYUP6fqtU-dgRgf','https://lh7-rt.googleusercontent.com/docsd/ANYlcfCV8vk38iQeOCHhl-jg0D5nz6Rir79Ca680JlkSkmWEIusqcHWAMB3M5L6YEAynYWyjFP6OJbD-r6mlVrkjdVfpdHtIBBIKjObDjzfOoiMRRN3VD4cSEq8v514KbrSESdNCmYPaIMz3vz9kd1Pxbz_ClcqPQ2Y72rSUBjuY','https://lh7-rt.googleusercontent.com/docsd/ANYlcfAaq2HS4LG_M6WEe1Sj61jLSdZ4RIiPF6_NshTMuJJxsGeETDyPx5dUba6rgpfaRDfQ1-0qXvTI_PKBlyluihflSZfh6GGzopRyiCtmNXqvruLebzti42ttpwI9zHa3kpRfv0RMT5GnqLuN8axBJzeXH94cUaAcdSnY0sxh'];
+
+    function initSwiper(effect = 'slide') {
+        if (mainSwiper) mainSwiper.destroy(true, true);
+
+        thumbsSwiper = new Swiper('.swiper-thumbs', {
+            spaceBetween: 10,
+            slidesPerView: 'auto',
+            freeMode: true,
+            watchSlidesProgress: true,
+        });
+
+        mainSwiper = new Swiper('.swiper-main', {
+            effect: effect,
+            grabCursor: true,
+            cubeEffect: { shadow: true, slideShadows: true, shadowOffset: 20, shadowScale: 0.94 },
+            coverflowEffect: { rotate: 50, stretch: 0, depth: 100, modifier: 1, slideShadows: true },
+            autoplay: {
+                delay: parseInt(document.getElementById('interval-input').value, 10) * 1000,
+                disableOnInteraction: false, // 確保互動後(例如點擊縮圖)繼續播放
+            },
+            navigation: {
+                nextEl: '.swiper-button-next',
+                prevEl: '.swiper-button-prev',
+            },
+            thumbs: { swiper: thumbsSwiper },
+            loop: imageUrls.length > 1,
+        });
+    }
+
+    function startSlideshow() {
+        if (!mainSwiper) return;
+        mainSwiper.autoplay.start();
+        document.getElementById('stop-button').style.backgroundColor = '';
+        document.getElementById('start-button').style.backgroundColor = 'green';
+    }
+
+    function stopSlideshow() {
+        if (!mainSwiper) return;
+        mainSwiper.autoplay.stop();
+        document.getElementById('stop-button').style.backgroundColor = 'red';
+        document.getElementById('start-button').style.backgroundColor = '';
+    }
+
+    function updateInterval() {
+        if (!mainSwiper) return;
+        const seconds = parseInt(document.getElementById('interval-input').value, 10);
+        if (seconds >= 1 && seconds <= 60) {
+            mainSwiper.params.autoplay.delay = seconds * 1000;
+            if (mainSwiper.autoplay.running) {
+                mainSwiper.autoplay.stop();
+                mainSwiper.autoplay.start();
+            }
+        } else {
+            alert('間隔時間必須在 1 到 60 秒之間！');
+            document.getElementById('interval-input').value = mainSwiper.params.autoplay.delay / 1000;
+        }
+    }
+
+    function updateTransition() {
+        const selectedEffect = document.getElementById('transition-select').value;
+        initSwiper(selectedEffect);
+        startSlideshow();
+    }
+
+    const modal = document.getElementById('myModal');
+    const modalImg = document.getElementById('img01');
+    const closeModal = document.getElementById('modalClose');
+
+    function openModal(src) {
+        stopSlideshow();
+        modal.style.display = 'flex';
+        modalImg.src = src;
+    }
+    closeModal.onclick = () => { modal.style.display = 'none'; startSlideshow(); };
+    modal.onclick = (event) => {
+        if (event.target !== modalImg) {
+             modal.style.display = 'none';
+             startSlideshow(); // 關閉大圖後也恢復播放
+        }
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+        if (imageUrls.length > 0) {
+            initSwiper('slide');
+            startSlideshow();
+
+            const toggleButton = document.getElementById('controls-toggle');
+            const controlBar = document.getElementById('control-bar');
+            toggleButton.addEventListener('click', () => {
+                controlBar.classList.toggle('is-open');
+                toggleButton.classList.toggle('is--open');
+            });
+
+        } else {
+            document.body.innerHTML = '<h2 style="color:white; text-align:center;">相簿沒有圖片！</h2>';
+        }
+    });
+</script>
+</body>
+</html>
+    
